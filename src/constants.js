@@ -1,6 +1,6 @@
 export const APP_ID   = "okane-mamoru-kun";
 export const APP_NAME = "お金を守るくん";
-export const TABS = ["今日", "カレンダー", "入力", "負債とカード", "使い方"];
+export const TABS = ["今日", "カレンダー", "推移", "入力", "負債とカード", "使い方"];
 
 export const ACCOUNT_TABLE = "mo_accounts";
 export const PLAN_TABLE    = "mo_plans";
