@@ -6,6 +6,7 @@ import Today from "./screens/Today.jsx";
 import Calendar from "./screens/Calendar.jsx";
 import Entry from "./screens/Entry.jsx";
 import DebtCards from "./screens/DebtCards.jsx";
+import Guide from "./screens/Guide.jsx";
 import Setup from "./screens/Setup.jsx";
 
 export default function App() {
@@ -62,6 +63,7 @@ export default function App() {
       {tab === "カレンダー"  && <Calendar {...p} />}
       {tab === "入力"        && <Entry {...p} />}
       {tab === "負債とカード" && <DebtCards {...p} />}
+      {tab === "使い方"      && <Guide />}
     </>
   );
 }
