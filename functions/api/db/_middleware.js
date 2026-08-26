@@ -4,18 +4,25 @@
  * 同じことができる _middleware.js の形で置いている（次へ渡さずここで返しきる）。
  * 判断はすべて shia2n-core の db-gateway に集約されている。ここは一覧を渡すだけ。
  *
- * mo_ の 5 つの表には利用者ごとの列を置いていない（使うのは Naoki 1 人だけのため）。
+ * mo_ の表には利用者ごとの列を置いていない（使うのは Naoki 1 人だけのため）。
  * よって owner は null にし、代わりに OKANE_ALLOW_UID に挙げた人だけを通す。
  * この値が空のときは誰も通さない（開いたままにしないため、既定を閉じる側に置く）。
+ *
+ * 2026-08-27 の変更
+ *   足した：mo_events（イベント）・mo_borrowings（追加で借りた記録）
+ *   外した：mo_cards・mo_debts。中身はイベントへ移してあり、画面はもう読まない。
+ *           表そのものは Supabase に残っている。消すかどうかは 2026-09-13 に決める。
+ *           ここから外しておくと、移し忘れがあっても古い側から読めないので、
+ *           同じ役割の器が 2 組ある状態にならない。
  */
 import { createDbGateway } from "shia2n-core/server/db-gateway.js";
 
 const TABLES = {
-  mo_accounts: { owner: null },
-  mo_plans:    { owner: null },
-  mo_balances: { owner: null },
-  mo_cards:    { owner: null },
-  mo_debts:    { owner: null },
+  mo_accounts:   { owner: null },
+  mo_plans:      { owner: null },
+  mo_balances:   { owner: null },
+  mo_events:     { owner: null },
+  mo_borrowings: { owner: null },
 };
 
 export async function onRequest(context) {

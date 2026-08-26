@@ -1,26 +1,38 @@
 import { useMemo } from "react";
 import { T, card, lb10, mono, fmt } from "shia2n-core";
-import { buildForecast, todayJst, addDays, movableOn } from "../lib/calc.js";
+import { buildForecast, todayJst, addDays, movableOn, monthlyFlow } from "../lib/calc.js";
 
 /**
  * 開いて最初に出る画面。
- * 見せるのは 3 つだけ。
  *   1. 口座ごとに、次にいくら足りなくなるか・いつまでに入れるか
- *   2. 30 日ぶんの不足の並び
- *   3. 動かせる予定（不足が出たときに手が打てるもの）
+ *   2. 月別の収支予測（2026-08-27 追加）
+ *   3. 30 日ぶんの不足の並び
+ *   4. 不足の原因（未入金・動かせる予定）
+ *   5. 日付が決まっていないもの
+ *
+ * 未入金は積み上げに入れない。日付を過ぎたのにまだ入っていないお金を
+ * 入る前提で計算すると、足りているように見えて落ちるため。
+ * 代わりに「不足の原因」として並べる。
  */
 export default function Today({ data }) {
   const { accounts, plans, balances } = data;
   const today = todayJst();
 
-  const { points, undated, byAccount } = useMemo(
-    () => buildForecast(accounts, plans, addDays(today, 180)),
+  const { points, undated, unpaid, byAccount } = useMemo(
+    () => buildForecast(accounts, plans, addDays(today, 180), today),
+    [accounts, plans, today]
+  );
+
+  const months = useMemo(
+    () => monthlyFlow(accounts, plans, today, 6),
     [accounts, plans, today]
   );
 
   const soon = points.filter((p) => p.不足額 > 0 && p.日付 <= addDays(today, 30));
   const drift = balances.filter((b) => Number(b.diff ?? 0) !== 0)[0] ?? null;
   const movable = movableOn(points, addDays(today, 30));
+  const nameOf = Object.fromEntries(accounts.map((a) => [a.id, a.name]));
+  const unpaidSum = unpaid.reduce((s, p) => s + Number(p.amount ?? 0), 0);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -89,6 +101,48 @@ export default function Today({ data }) {
         })}
       </div>
 
+      {/* 月別の収支予測 */}
+      <div style={{ ...card, padding: "14px 16px" }}>
+        <div style={{ ...lb10, marginBottom: 4 }}>月別の収支予測</div>
+        <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+          日付が決まっていないものと、日付を過ぎた未入金は入れていません。
+        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+          <thead>
+            <tr style={{ color: T.muted, textAlign: "left" }}>
+              <th style={th}>月</th>
+              <th style={{ ...th, textAlign: "right" }}>入り</th>
+              <th style={{ ...th, textAlign: "right" }}>出</th>
+              <th style={{ ...th, textAlign: "right" }}>差引</th>
+              {accounts.map((a) => (
+                <th key={a.id} style={{ ...th, textAlign: "right" }}>{a.name} 月末</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {months.map((m) => (
+              <tr key={m.月} style={{ borderTop: `1px solid ${T.border}` }}>
+                <td style={td}>{m.月}</td>
+                <td style={{ ...td, textAlign: "right", ...mono, color: T.green }}>{fmt(m.入り)}</td>
+                <td style={{ ...td, textAlign: "right", ...mono, color: T.red }}>{fmt(m.出)}</td>
+                <td style={{ ...td, textAlign: "right", ...mono, fontWeight: 700, color: m.差引 < 0 ? T.red : T.text }}>
+                  {m.差引 < 0 ? "−" : "＋"}{fmt(Math.abs(m.差引))}
+                </td>
+                {accounts.map((a) => {
+                  const v = m.月末残高[a.id] ?? 0;
+                  const low = v < Number(a.min_balance ?? 0);
+                  return (
+                    <td key={a.id} style={{ ...td, textAlign: "right", ...mono, color: low ? T.red : T.text }}>
+                      {fmt(v)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       {/* 30 日ぶんの不足 */}
       {soon.length > 0 && (
         <div style={{ ...card, padding: "14px 16px" }}>
@@ -117,7 +171,29 @@ export default function Today({ data }) {
         </div>
       )}
 
-      {/* 動かせるもの */}
+      {/* 不足の原因：未入金 */}
+      {unpaid.length > 0 && (
+        <div style={{ ...card, padding: "14px 16px", borderColor: T.amber }}>
+          <div style={{ ...lb10, color: T.amber, marginBottom: 4 }}>
+            不足の原因：入る日を過ぎたのに、まだ入っていないお金が {unpaid.length} 件・{fmt(unpaidSum)}
+          </div>
+          <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+            上の計算には入れていません。入る前提で数えると、足りているように見えて落ちるためです。
+            入ったら、その回を「済」にしてください。
+          </div>
+          {unpaid.map((p) => (
+            <div key={p.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "5px 0", borderTop: `1px solid ${T.border}` }}>
+              <span>
+                <span style={{ color: T.amber, fontWeight: 700, marginRight: 6 }}>{p.plan_date}</span>
+                {nameOf[p.account_id]}　{p.name}
+              </span>
+              <span style={{ ...mono, color: T.amber }}>＋{fmt(Number(p.amount))}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 不足の原因：動かせるもの */}
       {soon.length > 0 && (
         <div style={{ ...card, padding: "14px 16px" }}>
           <div style={{ ...lb10, marginBottom: 4 }}>動かせる予定</div>

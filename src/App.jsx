@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { T, card } from "shia2n-core";
 import { APP_NAME, TABS } from "./constants.js";
-import { loadAll } from "./lib/api.js";
+import { loadAll, addOccurrences } from "./lib/api.js";
+import { missingOccurrences, todayJst } from "./lib/calc.js";
 import Today from "./screens/Today.jsx";
 import Calendar from "./screens/Calendar.jsx";
 import Entry from "./screens/Entry.jsx";
@@ -15,11 +16,37 @@ export default function App() {
   const [data, setData] = useState(null);
   const [err, setErr]   = useState(null);
   const [busy, setBusy] = useState(true);
+  const [made, setMade] = useState(0);      // この回に作った回の数
+  const filling = useRef(false);            // 作りに行っている最中か
 
   const reload = useCallback(async () => {
     setBusy(true);
     try {
-      setData(await loadAll());
+      const d = await loadAll();
+
+      /**
+       * 繰り返しの決まりから、まだ無い回を作る。
+       * 新しく毎晩動くものを増やさず、画面を開いたときに 1 回だけ通す。
+       * 同じ回は鍵で弾くので、何回開いても増えない。
+       */
+      if (!filling.current) {
+        const rows = missingOccurrences(d.events, d.plans, todayJst());
+        if (rows.length > 0) {
+          filling.current = true;
+          try {
+            await addOccurrences(rows);
+            const d2 = await loadAll();
+            setData(d2);
+            setMade(rows.length);
+            setErr(null);
+            return;
+          } finally {
+            filling.current = false;
+          }
+        }
+      }
+
+      setData(d);
       setErr(null);
     } catch (e) {
       setErr(e.message ?? String(e));
@@ -60,6 +87,11 @@ export default function App() {
   const p = { data, reload, busy };
   return shell(
     <>
+      {made > 0 && (
+        <div style={{ ...card, padding: "8px 14px", marginBottom: 12, borderColor: T.blue, background: "#EEF2F8", fontSize: 12 }}>
+          繰り返しの決まりから、先の月の予定を {made} 件作りました。金額は見込みです。
+        </div>
+      )}
       {tab === "今日"        && <Today {...p} />}
       {tab === "カレンダー"  && <Calendar {...p} />}
       {tab === "推移"        && <Trend {...p} />}
