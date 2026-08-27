@@ -230,10 +230,15 @@ export function recurrenceText(e) {
   return "単発";
 }
 
-/** そのイベントが、いつ落ちる／入るか（今日から monthsAhead か月ぶん） */
+/**
+ * その登録が、いつ落ちる／入るか（今日から monthsAhead か月ぶん）。
+ * 終わりの日（ends_on）を過ぎた回は作らない。空なら終わりなし。
+ */
 export function occurrenceDates(e, today = todayJst(), monthsAhead = MONTHS_AHEAD) {
   const out = [];
   const startYm = ym(today);
+  const stop = e.ends_on ? String(e.ends_on).slice(0, 10) : null;
+  const ok = (d) => d >= today && (!stop || d <= stop);
 
   if (e.recur_kind === "monthly_day" || e.recur_kind === "month_end") {
     for (let i = 0; i <= monthsAhead; i++) {
@@ -244,7 +249,7 @@ export function occurrenceDates(e, today = todayJst(), monthsAhead = MONTHS_AHEA
       const day =
         e.recur_kind === "month_end" ? last : Math.min(Number(e.recur_day ?? 1), last);
       const d = `${mm}-${String(day).padStart(2, "0")}`;
-      if (d >= today) out.push(d);
+      if (ok(d)) out.push(d);
     }
     return out;
   }
@@ -256,7 +261,7 @@ export function occurrenceDates(e, today = todayJst(), monthsAhead = MONTHS_AHEA
     const end = `${endYm}-${String(daysInMonth(endY, endM)).padStart(2, "0")}`;
     let d = today;
     while (d <= end) {
-      if (new Date(`${d}T00:00:00Z`).getUTCDay() === Number(e.recur_weekday ?? 0)) out.push(d);
+      if (ok(d) && new Date(`${d}T00:00:00Z`).getUTCDay() === Number(e.recur_weekday ?? 0)) out.push(d);
       d = addDays(d, 1);
     }
     return out;
@@ -274,7 +279,7 @@ export function defaultAmount(e, mine) {
   if (e.amount_rule !== "毎月変わる") return e.amount == null ? null : n(e.amount);
 
   const fixed = mine
-    .filter((p) => p.amount != null && (p.status === "済" || p.certainty === "確定"))
+    .filter((p) => p.amount != null && p.status === "済")
     .sort((x, y) => (String(x.plan_date) < String(y.plan_date) ? 1 : -1))
     .slice(0, LOOKBACK)
     .map((p) => n(p.amount));
@@ -324,7 +329,7 @@ export function missingOccurrences(events, plans, today = todayJst(), monthsAhea
         certainty: e.certainty,
         movable: e.movable,
         status: "未",
-        pair_key: e.pair_key ?? null,
+        pair_key: e.pair_key ? `${e.pair_key}@${d}` : null,
         note: null,
       });
     }
@@ -336,4 +341,37 @@ export function missingOccurrences(events, plans, today = todayJst(), monthsAhea
 export function creditLeft(e) {
   if (e.credit_limit == null) return null;
   return n(e.credit_limit) - n(e.credit_used);
+}
+
+/* ── どこまで確定した数字か ────────────────────────────────────────── */
+
+/**
+ * 見込みのまま残っている動きを集める。
+ *
+ * 「週 1 回 30 分で分からないまま残るものが 0 件」から引くと、
+ * 数字そのものだけでは足りない。**その数字がどこまで確定しているか**が
+ * 一緒に出ていないと、把握したつもりで外れる。
+ * 見込みのままの額が多い月は、不足額もその幅で動く。
+ */
+export function stillEstimated(plans, today = todayJst(), untilDate) {
+  const rows = plans.filter(
+    (p) =>
+      p.status === "未" &&
+      p.plan_date &&
+      p.plan_date >= today &&
+      (!untilDate || p.plan_date <= untilDate) &&
+      p.certainty === "見込み"
+  );
+  const 出 = rows.filter((p) => p.direction === "out").reduce((s, p) => s + n(p.amount), 0);
+  const 入り = rows.filter((p) => p.direction === "in").reduce((s, p) => s + n(p.amount), 0);
+  return { 件数: rows.length, 出, 入り, 一覧: rows };
+}
+
+/** 確定の画面に並べるもの：今月ぶんと、日付を過ぎてまだ済んでいないもの */
+export function toSettle(plans, today = todayJst()) {
+  const thisMonth = ym(today);
+  return plans
+    .filter((p) => p.status === "未" && p.plan_date)
+    .filter((p) => ym(p.plan_date) === thisMonth || p.plan_date < today)
+    .sort((x, y) => (x.plan_date < y.plan_date ? -1 : 1));
 }

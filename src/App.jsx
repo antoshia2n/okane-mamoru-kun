@@ -5,8 +5,8 @@ import { loadAll, addOccurrences } from "./lib/api.js";
 import { missingOccurrences, todayJst } from "./lib/calc.js";
 import Today from "./screens/Today.jsx";
 import Calendar from "./screens/Calendar.jsx";
-import Entry from "./screens/Entry.jsx";
-import DebtCards from "./screens/DebtCards.jsx";
+import Settle from "./screens/Settle.jsx";
+import Register from "./screens/Register.jsx";
 import Trend from "./screens/Trend.jsx";
 import Guide from "./screens/Guide.jsx";
 import Setup from "./screens/Setup.jsx";
@@ -95,8 +95,8 @@ export default function App() {
       {tab === "今日"        && <Today {...p} />}
       {tab === "カレンダー"  && <Calendar {...p} />}
       {tab === "推移"        && <Trend {...p} />}
-      {tab === "入力"        && <Entry {...p} />}
-      {tab === "負債とカード" && <DebtCards {...p} />}
+      {tab === "確定"        && <Settle {...p} />}
+      {tab === "登録"        && <Register {...p} />}
       {tab === "使い方"      && <Guide />}
     </>
   );

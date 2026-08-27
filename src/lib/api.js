@@ -91,3 +91,54 @@ const crud = (table) => ({
 
 export const eventApi     = crud(EVENT_TABLE);
 export const borrowingApi = crud(BORROWING_TABLE);
+
+/* ── 実績を入れる（確定の画面から呼ぶ） ──────────────────────────── */
+
+/**
+ * 動き 1 件に実額を入れて確定させる。
+ *
+ *   amount          いつも「いま使う額」。実績が入ればここが実額になる
+ *   planned_amount  実績を入れる前の見込み額。最初に確定させたときだけ書く
+ *   status          済
+ *   certainty       確定
+ *
+ * この持ち方にしたのは、amount を読んでいる側（朝の報告を出す口・今日の画面）を
+ * 1 行も直さずに、見込みと実績の両方を持てるようにするため。
+ *
+ * 対で登録されているもの（口座をまたぐ出と入り）は、もう片方も同じ額で確定させる。
+ * 借入やカードのように返済残高を持つ登録なら、その額だけ残高を減らす。
+ */
+export const settlePlan = async ({ plan, actual, event, reduceBalance }) => {
+  const saved = await savePlan({
+    id: plan.id,
+    amount: actual,
+    planned_amount: plan.planned_amount ?? plan.amount,
+    status: "済",
+    certainty: "確定",
+  });
+
+  if (plan.pair_key) {
+    await movePair(plan.pair_key, plan.id, {
+      amount: actual,
+      status: "済",
+      certainty: "確定",
+    });
+  }
+
+  if (reduceBalance && event && event.balance_remaining != null) {
+    const left = Number(event.balance_remaining) - Number(actual);
+    await eventApi.save({ id: event.id, balance_remaining: left < 0 ? 0 : left });
+  }
+
+  return saved;
+};
+
+/** 確定を取り消して見込みに戻す（入れ間違いの戻し方） */
+export const unsettlePlan = (plan) =>
+  savePlan({
+    id: plan.id,
+    amount: plan.planned_amount ?? plan.amount,
+    planned_amount: null,
+    status: "未",
+    certainty: "見込み",
+  });

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { T, card, lb10, mono, fmt } from "shia2n-core";
-import { buildForecast, todayJst, addDays, movableOn, monthlyFlow } from "../lib/calc.js";
+import { buildForecast, todayJst, addDays, movableOn, monthlyFlow, stillEstimated } from "../lib/calc.js";
 
 /**
  * 開いて最初に出る画面。
@@ -33,6 +33,12 @@ export default function Today({ data }) {
   const movable = movableOn(points, addDays(today, 30));
   const nameOf = Object.fromEntries(accounts.map((a) => [a.id, a.name]));
   const unpaidSum = unpaid.reduce((s, p) => s + Number(p.amount ?? 0), 0);
+
+  // どこまで確定した数字か。ここが出ていないと、把握したつもりで外れる
+  const est = useMemo(
+    () => stillEstimated(plans, today, addDays(today, 30)),
+    [plans, today]
+  );
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
@@ -141,6 +147,34 @@ export default function Today({ data }) {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* どこまで確定した数字か */}
+      <div style={{ ...card, padding: "14px 16px", borderColor: est.件数 > 0 ? T.amber : T.border }}>
+        <div style={{ ...lb10, color: est.件数 > 0 ? T.amber : T.text, marginBottom: 4 }}>
+          この数字がどこまで確定しているか
+        </div>
+        {est.件数 === 0 ? (
+          <div style={{ fontSize: 12, color: T.green }}>
+            30 日以内の動きは全部、額が確定しています。上の数字はこのまま読めます。
+          </div>
+        ) : (
+          <>
+            <div style={{ fontSize: 12, marginBottom: 8 }}>
+              30 日以内に、まだ見込みのままの動きが <b style={{ ...mono, color: T.amber }}>{est.件数}</b> 件あります。
+              出 <b style={{ ...mono, color: T.red }}>{fmt(est.出)}</b>　入り <b style={{ ...mono, color: T.green }}>{fmt(est.入り)}</b>。
+              <b style={{ color: T.text }}>上の不足額は、この幅で動きます。</b>
+            </div>
+            {est.一覧.map((p) => (
+              <div key={p.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "4px 0", borderTop: `1px solid ${T.border}` }}>
+                <span style={{ color: T.muted }}>{p.plan_date}　{nameOf[p.account_id]}　{p.name}</span>
+                <span style={{ ...mono, color: p.direction === "out" ? T.red : T.green }}>
+                  {p.direction === "out" ? "−" : "＋"}{fmt(Number(p.amount))}
+                </span>
+              </div>
+            ))}
+          </>
+        )}
       </div>
 
       {/* 30 日ぶんの不足 */}
