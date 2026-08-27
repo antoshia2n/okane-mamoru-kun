@@ -5,7 +5,7 @@
  *
  * 2026-08-27：mo_events（イベント）と mo_borrowings（追加で借りた記録）を足した。
  * 古い mo_cards / mo_debts はここから読まない。中身はイベントへ移してある。
- * 表そのものは残っている（消すかどうかは 2026-09-13 に決める）。
+ * 表そのものは 2026-08-27 に落とした（Supabase に無い）。備考と終わりの月は先に移してある。
  */
 import { supabase } from "shia2n-core";
 import {
