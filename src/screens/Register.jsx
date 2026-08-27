@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { T, card, lb10, inp, mono, fmt, solidBtn, ghostBtn } from "shia2n-core";
 import { RECUR_KIND, WEEKDAYS, CERTAINTY, MOVABLE, AMOUNT_RULE, KINDS } from "../constants.js";
-import { eventApi, borrowingApi, saveAccount } from "../lib/api.js";
-import { recurrenceText, creditLeft, todayJst } from "../lib/calc.js";
+import { eventApi, borrowingApi, saveAccount, deletePlan } from "../lib/api.js";
+import { recurrenceText, creditLeft, todayJst, amountRange } from "../lib/calc.js";
 
 /**
  * 登録の画面。
@@ -28,7 +28,7 @@ import { recurrenceText, creditLeft, todayJst } from "../lib/calc.js";
 const emptyEvent = {
   name: "", account_id: "", direction: "out",
   recur_kind: "monthly_day", recur_day: "", recur_weekday: "1", ends_on: "",
-  amount: "", amount_rule: "毎回同じ", certainty: "確定", movable: "動かせない",
+  amount: "", amount_high: "", amount_rule: "毎回同じ", certainty: "確定", movable: "動かせない",
   expected_by: "", balance_remaining: "", credit_limit: "", credit_used: "",
   closing_day: "", site_url: "", note: "", active: true,
 };
@@ -138,8 +138,11 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
   const [borrowOpen, setBorrowOpen] = useState(false);
   const [borrow, setBorrow] = useState(emptyBorrow);
   const [busy, setBusy] = useState(false);
+  const [ask, setAsk] = useState(false);
 
   const accountName = accounts.find((a) => a.id === e.account_id)?.name ?? "口座が未設定";
+  const mine = plans.filter((p) => p.event_id === e.id);
+  const range = amountRange(e, mine);
   const left = creditLeft(e);
   const rate = e.credit_limit != null && Number(e.credit_limit) > 0
     ? Math.min(100, Math.round((Number(e.credit_used ?? 0) / Number(e.credit_limit)) * 100)) : null;
@@ -179,11 +182,21 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
             {e.name}
             {!e.active && <span style={{ marginLeft: 6, fontSize: 10, color: T.muted }}>使っていない</span>}
           </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 22, fontWeight: 700, ...mono, color: dir === "in" ? T.green : T.red }}>
+              {range
+                ? `${fmt(range.low)} 〜 ${fmt(range.high)}`
+                : e.amount != null ? fmt(Number(e.amount)) : "額が未入力"}
+            </span>
+            <span style={{ fontSize: 11, color: T.muted }}>
+              {recurrenceText(e)}
+              {e.ends_on && <>・{String(e.ends_on).slice(0, 7)} まで</>}
+            </span>
+          </div>
           <div style={{ fontSize: 11, color: T.faint, marginTop: 2 }}>
-            {accountName}／{recurrenceText(e)}
-            {e.ends_on && <>／{String(e.ends_on).slice(0, 7)} まで</>}
-            {e.amount != null && <>／{fmt(Number(e.amount))}</>}
-            {e.amount_rule === "毎月変わる" && <span style={{ color: T.amber }}>／毎月変わる</span>}
+            {accountName}
+            {e.amount_rule === "毎月変わる" && <span style={{ color: T.amber }}>・毎月変わる</span>}
+            {range && <span style={{ color: T.amber }}>・幅の出どころは{range.出どころ}</span>}
           </div>
         </div>
         <div style={{ display: "flex", gap: 4 }}>
@@ -191,7 +204,10 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
             <a href={e.site_url} target="_blank" rel="noreferrer" style={{ ...ghostBtn, textDecoration: "none", display: "inline-flex" }}>管理サイト</a>
           )}
           <button style={editing ? solidBtn(T.text) : ghostBtn} disabled={disabled} onClick={() => (editing ? onClose() : onOpen())}>
-            {editing ? "直しています" : "直す"}
+            {editing ? "編集中" : "編集"}
+          </button>
+          <button style={{ ...ghostBtn, color: T.red }} disabled={disabled} onClick={() => setAsk(true)}>
+            削除
           </button>
         </div>
       </div>
@@ -218,10 +234,33 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
 
       {e.note && <div style={{ fontSize: 11, color: T.faint, marginTop: 4 }}>{e.note}</div>}
 
+      {ask && (
+        <DeleteAsk
+          e={e}
+          mine={mine}
+          onCancel={() => setAsk(false)}
+          onDone={async (alsoPlans) => {
+            setBusy(true);
+            try {
+              if (alsoPlans) {
+                for (const p of mine.filter((x) => x.status === "未")) await deletePlan(p.id);
+              }
+              await eventApi.remove(e.id);
+              setAsk(false);
+              await reload();
+              setMsg({ text: `${e.name} を削除しました` });
+            } catch (err) {
+              setMsg({ text: err.message ?? String(err), ng: true });
+            } finally { setBusy(false); }
+          }}
+          busy={busy}
+        />
+      )}
+
       {editing && (
         <Form
           initial={toForm(e)} accounts={accounts} dir={dir} id={e.id}
-          onDone={async () => { onClose(); await reload(); setMsg({ text: "直りました" }); }}
+          onDone={async () => { onClose(); await reload(); setMsg({ text: "入りました" }); }}
           onError={(t) => setMsg({ text: t, ng: true })}
           onCancel={onClose}
         />
@@ -276,7 +315,7 @@ const toForm = (e) => ({
   recur_kind: e.recur_kind ?? "once",
   recur_day: String(e.recur_day ?? ""), recur_weekday: String(e.recur_weekday ?? "1"),
   ends_on: e.ends_on ? String(e.ends_on).slice(0, 7) : "",
-  amount: String(e.amount ?? ""), amount_rule: e.amount_rule ?? "毎回同じ",
+  amount: String(e.amount ?? ""), amount_high: String(e.amount_high ?? ""), amount_rule: e.amount_rule ?? "毎回同じ",
   certainty: e.certainty ?? "確定", movable: e.movable ?? "動かせない",
   expected_by: e.expected_by ? String(e.expected_by).slice(0, 10) : "",
   balance_remaining: String(e.balance_remaining ?? ""),
@@ -309,6 +348,7 @@ function Form({ initial, accounts, dir, id, onDone, onError, onCancel }) {
         recur_weekday: f.recur_kind === "weekly" ? Number(f.recur_weekday) : null,
         ends_on: f.ends_on ? `${f.ends_on}-01` : null,
         amount: f.amount === "" ? null : Number(f.amount),
+        amount_high: f.amount_high === "" ? null : Number(f.amount_high),
         amount_rule: f.amount_rule,
         certainty: f.certainty,
         movable: f.movable,
@@ -330,7 +370,7 @@ function Form({ initial, accounts, dir, id, onDone, onError, onCancel }) {
   return (
     <div style={{ marginTop: 10, padding: 12, background: T.s2, borderRadius: 6, border: `1px solid ${T.border}` }}>
       <div style={{ ...lb10, marginBottom: 8 }}>
-        {id ? "直す" : dir === "in" ? "入ってくるものを 1 件足す" : "出ていくものを 1 件足す"}
+        {id ? "編集" : dir === "in" ? "入ってくるものを 1 件足す" : "出ていくものを 1 件足す"}
       </div>
 
       <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
@@ -364,6 +404,11 @@ function Form({ initial, accounts, dir, id, onDone, onError, onCancel }) {
         <F label={dir === "in" ? "いくら入る見込みか" : "いくら落ちる見込みか"}>
           <input style={inp} type="number" value={f.amount} onChange={set("amount")} />
         </F>
+        {f.amount_rule === "毎月変わる" && (
+          <F label="多めに見たときの額（空でも可）">
+            <input style={inp} type="number" value={f.amount_high} onChange={set("amount_high")} />
+          </F>
+        )}
         <F label="金額の決まり方">
           <select style={inp} value={f.amount_rule} onChange={set("amount_rule")}>
             {AMOUNT_RULE.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -390,7 +435,8 @@ function Form({ initial, accounts, dir, id, onDone, onError, onCancel }) {
 
       {f.amount_rule === "毎月変わる" && (
         <div style={{ fontSize: 11, color: T.amber, marginTop: 8 }}>
-          まだ確定していない回は、確定した直近 6 回のうち一番少なかった額を見込みに使います。
+          少なめの額を不足額の計算に使い、多めの額は幅の上側として画面に出します。
+          実績が 3 回たまったら、手で入れた幅より実績の最小と最大を使います。
           {dir === "in" ? "入りは少なめに寄せます（多めに見て外れると落ちるため）。" : "出は多めに寄せます。"}
         </div>
       )}
@@ -476,6 +522,36 @@ function AccountBlock({ accounts, reload, setMsg }) {
       ))}
       <div style={{ marginTop: 10 }}>
         <button style={solidBtn(T.text)} onClick={save} disabled={busy}>入れる</button>
+      </div>
+    </div>
+  );
+}
+
+function DeleteAsk({ e, mine, onCancel, onDone, busy }) {
+  const [alsoPlans, setAlsoPlans] = useState(true);
+  const notYet = mine.filter((p) => p.status === "未").length;
+  const done   = mine.filter((p) => p.status === "済").length;
+
+  return (
+    <div style={{ marginTop: 10, padding: 12, background: "#FBF0EF", borderRadius: 6, border: `1px solid ${T.red}` }}>
+      <div style={{ ...lb10, color: T.red, marginBottom: 6 }}>{e.name} を削除しますか</div>
+      <div style={{ fontSize: 12, marginBottom: 8 }}>
+        この登録にぶら下がっている動きは、まだのものが <b style={{ ...mono }}>{notYet}</b> 件、
+        確定済みのものが <b style={{ ...mono }}>{done}</b> 件あります。
+      </div>
+      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+        <input type="checkbox" checked={alsoPlans} onChange={(ev) => setAlsoPlans(ev.target.checked)} />
+        まだの動き {notYet} 件も一緒に消す
+      </label>
+      <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>
+        外すと、動きだけが登録から切り離されて残ります。確定済みの {done} 件は消しません
+        （過去に起きたことなので、消すと実残高との差が合わなくなります）。
+      </div>
+      <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+        <button style={solidBtn(T.red)} onClick={() => onDone(alsoPlans)} disabled={busy}>
+          {busy ? "消しています" : "削除する"}
+        </button>
+        <button style={ghostBtn} onClick={onCancel} disabled={busy}>やめる</button>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { T, card, lb10, mono, fmt } from "shia2n-core";
-import { buildForecast, todayJst, addDays, movableOn, monthlyFlow, stillEstimated } from "../lib/calc.js";
+import { buildForecast, todayJst, addDays, movableOn, monthlyFlow, stillEstimated, possibleDoubles } from "../lib/calc.js";
 
 /**
  * 開いて最初に出る画面。
@@ -35,6 +35,8 @@ export default function Today({ data }) {
   const unpaidSum = unpaid.reduce((s, p) => s + Number(p.amount ?? 0), 0);
 
   // どこまで確定した数字か。ここが出ていないと、把握したつもりで外れる
+  const doubles = useMemo(() => possibleDoubles(plans), [plans]);
+
   const est = useMemo(
     () => stillEstimated(plans, today, addDays(today, 30)),
     [plans, today]
@@ -148,6 +150,27 @@ export default function Today({ data }) {
           </tbody>
         </table>
       </div>
+
+      {/* 同じものが 2 つの名前で入っていないか */}
+      {doubles.length > 0 && (
+        <div style={{ ...card, padding: "14px 16px", borderColor: T.red, background: "#FBF0EF" }}>
+          <div style={{ ...lb10, color: T.red, marginBottom: 4 }}>
+            同じものが 2 つ入っているかもしれません（{doubles.length} 組）
+          </div>
+          <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+            同じ月・同じ口座・同じ向きで、名前の先頭が同じ動きが 2 つあります。
+            別物ならそのままで結構です。同じものなら、片方を「登録」から消してください。
+            <b style={{ color: T.text }}>自動では消しません</b>（正しい行まで消えたときに気づけないため）。
+          </div>
+          {doubles.map(([a, b], i) => (
+            <div key={i} style={{ fontSize: 12, padding: "5px 0", borderTop: `1px solid ${T.border}` }}>
+              {a.plan_date}　{a.name}　<b style={mono}>{fmt(Number(a.amount))}</b>
+              <span style={{ color: T.muted }}>　と　</span>
+              {b.plan_date}　{b.name}　<b style={mono}>{fmt(Number(b.amount))}</b>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* どこまで確定した数字か */}
       <div style={{ ...card, padding: "14px 16px", borderColor: est.件数 > 0 ? T.amber : T.border }}>

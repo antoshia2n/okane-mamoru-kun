@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
-import { T, card, lb10, inp, mono, fmt, ghostBtn, solidBtn } from "shia2n-core";
+import { T, card, lb10, mono, fmt, ghostBtn } from "shia2n-core";
 import { buildForecast, todayJst, addDays, monthDays } from "../lib/calc.js";
-import { CERTAINTY, MOVABLE } from "../constants.js";
-import { savePlan, movePair, deletePlan } from "../lib/api.js";
 
 /**
  * 引き落とし日と入金日を、月の並びの上で見る画面。
@@ -14,7 +12,7 @@ import { savePlan, movePair, deletePlan } from "../lib/api.js";
  *   ・その日に 1 件足すこともできる
  * 対で登録されている予定は、日付と金額を直すともう片方も同じだけ動く。
  */
-export default function Calendar({ data, reload }) {
+export default function Calendar({ data }) {
   const { accounts, plans } = data;
   const today = todayJst();
   const [cursor, setCursor] = useState(() => ({ y: Number(today.slice(0, 4)), m: Number(today.slice(5, 7)) }));
@@ -114,9 +112,6 @@ export default function Calendar({ data, reload }) {
         <DayPanel
           date={picked}
           rows={pickedRows}
-          accounts={accounts}
-          plans={plans}
-          reload={reload}
           onClose={() => setPicked(null)}
         />
       )}
@@ -124,159 +119,21 @@ export default function Calendar({ data, reload }) {
   );
 }
 
-/* ── 押した日の中身と、その場の入力 ────────────────────────────────── */
+/* ── 押した日の中身（読むだけ） ────────────────────────────────────── */
 
-const emptyRow = {
-  account_id: "", direction: "out", amount: "", name: "",
-  certainty: "確定", movable: "動かせない", status: "未", note: "",
-};
-
-function DayPanel({ date, rows, accounts, plans, reload, onClose }) {
-  const [editId, setEditId] = useState(null);
-  const [form, setForm]     = useState(emptyRow);
-  const [adding, setAdding] = useState(false);
-  const [addForm, setAddForm] = useState({ ...emptyRow, plan_date: date });
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg]       = useState(null);
-
-  const set    = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const setAdd = (k) => (e) => setAddForm({ ...addForm, [k]: e.target.value });
-
-  const openEdit = (m) => {
-    setMsg(null);
-    setAdding(false);
-    setEditId(m.id);
-    setForm({
-      id: m.id,
-      key: m.key,
-      account_id: String(m.account_id ?? ""),
-      plan_date: m.plan_date ?? date,
-      direction: m.direction,
-      amount: String(m.amount ?? ""),
-      name: m.name ?? "",
-      certainty: m.certainty ?? "確定",
-      movable: m.movable ?? "動かせない",
-      status: m.status ?? "未",
-      pair_key: m.pair_key ?? "",
-      note: m.note ?? "",
-    });
-  };
-
-  const closeEdit = () => { setEditId(null); setForm(emptyRow); setMsg(null); };
-
-  const toRow = (f) => ({
-    account_id: Number(f.account_id),
-    plan_date: f.plan_date || null,
-    direction: f.direction,
-    amount: Number(f.amount),
-    name: f.name,
-    certainty: f.certainty,
-    movable: f.movable,
-    status: f.status,
-    note: f.note || null,
-  });
-
-  const saveEdit = async () => {
-    setMsg(null);
-    if (!form.account_id) { setMsg({ text: "口座を選んでください", ng: true }); return; }
-    if (!form.name)       { setMsg({ text: "名前を入れてください", ng: true }); return; }
-    if (form.amount === "") { setMsg({ text: "金額を入れてください", ng: true }); return; }
-    setSaving(true);
-    try {
-      const row = toRow(form);
-      await savePlan({ id: form.id, ...row });
-      // 対で登録されているものは、もう片方も同じだけ動かす
-      if (form.pair_key) {
-        await movePair(form.pair_key, form.id, {
-          plan_date: row.plan_date, amount: row.amount, status: row.status,
-        });
-      }
-      await reload();
-      closeEdit();
-    } catch (e) {
-      setMsg({ text: e.message ?? String(e), ng: true });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const submitAdd = async () => {
-    setMsg(null);
-    if (!addForm.account_id) { setMsg({ text: "口座を選んでください", ng: true }); return; }
-    if (!addForm.name)       { setMsg({ text: "名前を入れてください", ng: true }); return; }
-    if (addForm.amount === "") { setMsg({ text: "金額を入れてください", ng: true }); return; }
-    setSaving(true);
-    try {
-      await savePlan({ key: `manual_${Date.now()}`, ...toRow({ ...addForm, plan_date: date }) });
-      setAddForm({ ...emptyRow, plan_date: date });
-      setAdding(false);
-      await reload();
-    } catch (e) {
-      setMsg({ text: e.message ?? String(e), ng: true });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const remove = async (m) => {
-    setMsg(null);
-    try {
-      await deletePlan(m.id);
-      if (editId === m.id) closeEdit();
-      await reload();
-    } catch (e) {
-      setMsg({ text: e.message ?? String(e), ng: true });
-    }
-  };
-
-  const fields = (f, s, withDate) => (
-    <>
-      <F label="口座">
-        <select style={inp} value={f.account_id} onChange={s("account_id")}>
-          <option value="">選ぶ</option>
-          {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-        </select>
-      </F>
-      {withDate && (
-        <F label="日付"><input style={inp} type="date" value={f.plan_date ?? ""} onChange={s("plan_date")} /></F>
-      )}
-      <F label="名前"><input style={inp} value={f.name} onChange={s("name")} /></F>
-      <F label="出か入りか">
-        <select style={inp} value={f.direction} onChange={s("direction")}>
-          <option value="out">出ていく</option>
-          <option value="in">入ってくる</option>
-        </select>
-      </F>
-      <F label="金額"><input style={inp} type="number" value={f.amount} onChange={s("amount")} /></F>
-      <F label="確定か見込みか">
-        <select style={inp} value={f.certainty} onChange={s("certainty")}>
-          {CERTAINTY.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </F>
-      <F label="動かせるか">
-        <select style={inp} value={f.movable} onChange={s("movable")}>
-          {MOVABLE.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </F>
-      <F label="状態">
-        <select style={inp} value={f.status} onChange={s("status")}>
-          <option value="未">未</option>
-          <option value="済">済</option>
-        </select>
-      </F>
-      <F label="備考"><input style={inp} value={f.note ?? ""} onChange={s("note")} /></F>
-    </>
-  );
-
+function DayPanel({ date, rows, onClose }) {
   return (
     <div style={{ ...card, padding: "14px 16px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <div style={lb10}>{date} の中身</div>
         <button style={ghostBtn} onClick={onClose}>閉じる</button>
       </div>
+      <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+        この画面は見るだけです。金額を直すのは「確定」、日付や繰り返しを直すのは「登録」です。
+      </div>
 
       {rows.length === 0 && (
-        <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>この日は出入りがありません。</div>
+        <div style={{ fontSize: 12, color: T.muted }}>この日は出入りがありません。</div>
       )}
 
       {rows.map((p, i) => (
@@ -287,62 +144,19 @@ function DayPanel({ date, rows, accounts, plans, reload, onClose }) {
               予定残高 {fmt(p.予定残高)}
             </span>
           </div>
-
-          {p.動き.map((m) => {
-            const editing = editId === m.id;
-            return (
-              <div key={m.id} style={{ paddingLeft: 10, opacity: editId && !editing ? 0.45 : 1 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "5px 0" }}>
-                  <span style={{ color: T.muted }}>
-                    {m.name}
-                    <span style={{ marginLeft: 6, fontSize: 10, color: m.certainty === "見込み" ? T.amber : T.faint }}>{m.certainty}</span>
-                    {m.movable !== "動かせない" && <span style={{ marginLeft: 6, fontSize: 10, color: T.blue }}>{m.movable}</span>}
-                    {m.pair_key && <span style={{ marginLeft: 6, fontSize: 10, color: T.blue }}>対</span>}
-                  </span>
-                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ ...mono, color: m.direction === "out" ? T.red : T.green }}>
-                      {m.direction === "out" ? "−" : "＋"}{fmt(Number(m.amount))}
-                    </span>
-                    <button
-                      style={editing ? solidBtn(T.text) : ghostBtn}
-                      disabled={!!editId && !editing}
-                      onClick={() => (editing ? closeEdit() : openEdit(m))}
-                    >
-                      {editing ? "直しています" : "直す"}
-                    </button>
-                    <button
-                      style={{ ...ghostBtn, color: T.red }}
-                      disabled={!!editId && !editing}
-                      onClick={() => remove(m)}
-                    >
-                      消す
-                    </button>
-                  </span>
-                </div>
-
-                {editing && (
-                  <div style={{ padding: "12px", background: T.s2, borderRadius: 6, border: `1px solid ${T.border}`, marginBottom: 8 }}>
-                    <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))" }}>
-                      {fields(form, set, true)}
-                    </div>
-                    {form.pair_key && (
-                      <div style={{ fontSize: 11, color: T.blue, marginTop: 8 }}>
-                        対で登録されています。日付・金額・状態を直すと、もう片方も同じだけ動きます。
-                      </div>
-                    )}
-                    <div style={{ display: "flex", gap: 6, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
-                      <button style={solidBtn(T.text)} onClick={saveEdit} disabled={saving}>
-                        {saving ? "入れています" : "この内容にする"}
-                      </button>
-                      <button style={ghostBtn} onClick={closeEdit} disabled={saving}>やめる</button>
-                      {msg && <span style={{ fontSize: 11, color: msg.ng ? T.red : T.muted }}>{msg.text}</span>}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
+          {p.動き.map((m) => (
+            <div key={m.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "4px 0 4px 10px", color: T.muted }}>
+              <span>
+                {m.name}
+                <span style={{ marginLeft: 6, fontSize: 10, color: m.certainty === "見込み" ? T.amber : T.faint }}>{m.certainty}</span>
+                {m.movable !== "動かせない" && <span style={{ marginLeft: 6, fontSize: 10, color: T.blue }}>{m.movable}</span>}
+                {m.pair_key && <span style={{ marginLeft: 6, fontSize: 10, color: T.blue }}>対</span>}
+              </span>
+              <span style={{ ...mono, color: m.direction === "out" ? T.red : T.green }}>
+                {m.direction === "out" ? "−" : "＋"}{fmt(Number(m.amount))}
+              </span>
+            </div>
+          ))}
           {p.不足額 > 0 && (
             <div style={{ fontSize: 12, color: T.red, fontWeight: 700, paddingLeft: 10 }}>
               不足 {fmt(p.不足額)}（{p.入れる期限} までに入れる）
@@ -350,37 +164,6 @@ function DayPanel({ date, rows, accounts, plans, reload, onClose }) {
           )}
         </div>
       ))}
-
-      <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 12 }}>
-        {!adding ? (
-          <button style={ghostBtn} disabled={!!editId} onClick={() => { setAdding(true); setMsg(null); }}>
-            この日に 1 件足す
-          </button>
-        ) : (
-          <div style={{ padding: "12px", background: T.s2, borderRadius: 6, border: `1px solid ${T.border}` }}>
-            <div style={{ ...lb10, marginBottom: 8 }}>{date} に足す</div>
-            <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))" }}>
-              {fields(addForm, setAdd, false)}
-            </div>
-            <div style={{ display: "flex", gap: 6, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
-              <button style={solidBtn(T.text)} onClick={submitAdd} disabled={saving}>
-                {saving ? "入れています" : "足す"}
-              </button>
-              <button style={ghostBtn} onClick={() => setAdding(false)} disabled={saving}>やめる</button>
-              {msg && <span style={{ fontSize: 11, color: msg.ng ? T.red : T.muted }}>{msg.text}</span>}
-            </div>
-          </div>
-        )}
-      </div>
     </div>
-  );
-}
-
-function F({ label, children }) {
-  return (
-    <label style={{ display: "block" }}>
-      <div style={{ ...lb10, marginBottom: 3 }}>{label}</div>
-      {children}
-    </label>
   );
 }

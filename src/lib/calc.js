@@ -375,3 +375,52 @@ export function toSettle(plans, today = todayJst()) {
     .filter((p) => ym(p.plan_date) === thisMonth || p.plan_date < today)
     .sort((x, y) => (x.plan_date < y.plan_date ? -1 : 1));
 }
+
+/** 金額の幅（少なめ〜多め）。実績が 3 回以上たまったら、手で入れた幅より実績を採る */
+export function amountRange(e, mine = []) {
+  const done = mine
+    .filter((p) => p.status === "済" && p.amount != null)
+    .sort((x, y) => (String(x.plan_date) < String(y.plan_date) ? 1 : -1))
+    .slice(0, LOOKBACK)
+    .map((p) => n(p.amount));
+
+  if (done.length >= 3) {
+    return { low: Math.min(...done), high: Math.max(...done), 出どころ: `直近 ${done.length} 回の実績` };
+  }
+  if (e.amount == null && e.amount_high == null) return null;
+  const low = e.amount == null ? null : n(e.amount);
+  const high = e.amount_high == null ? null : n(e.amount_high);
+  if (low == null || high == null || high <= low) return null;
+  return { low, high, 出どころ: "手で入れた幅" };
+}
+
+/**
+ * 同じものが 2 つの名前で入っていないかを見つける。
+ *
+ * 2026-08-27 に実際に起きた形：同じ月の同じ口座に「ユニバペイ振り込み」と
+ * 「ユニバペイ 入金」が両方あり、入金が 50,000 多く見えていた。
+ * 消す判断はしない（別物のこともあるため）。**見つけて出すだけ。**
+ * 黙って消すと、正しい行まで消えたときに気づけない。
+ */
+export function possibleDoubles(plans) {
+  const key = (p) => `${p.account_id}|${p.direction}|${ym(p.plan_date ?? "")}`;
+  const groups = new Map();
+  for (const p of plans) {
+    if (!p.plan_date || p.status !== "未") continue;
+    const k = key(p);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(p);
+  }
+  const out = [];
+  for (const rows of groups.values()) {
+    for (let i = 0; i < rows.length; i++) {
+      for (let j = i + 1; j < rows.length; j++) {
+        const a = String(rows[i].name ?? ""), b = String(rows[j].name ?? "");
+        if (a.length < 3 || b.length < 3) continue;
+        if (rows[i].event_id != null && rows[i].event_id === rows[j].event_id) continue;
+        if (a.slice(0, 3) === b.slice(0, 3)) out.push([rows[i], rows[j]]);
+      }
+    }
+  }
+  return out;
+}
