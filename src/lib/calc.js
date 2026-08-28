@@ -237,8 +237,8 @@ export function recurrenceText(e) {
 export function occurrenceDates(e, today = todayJst(), monthsAhead = MONTHS_AHEAD) {
   const out = [];
   const startYm = ym(today);
-  const stop = e.ends_on ? String(e.ends_on).slice(0, 10) : null;
-  const ok = (d) => d >= today && (!stop || d <= stop);
+  const stop = e.ends_on ? String(e.ends_on).slice(0, 7) : null;
+  const ok = (d) => d >= today && (!stop || d.slice(0, 7) <= stop);
 
   if (e.recur_kind === "monthly_day" || e.recur_kind === "month_end") {
     for (let i = 0; i <= monthsAhead; i++) {
