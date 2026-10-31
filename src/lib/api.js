@@ -118,11 +118,21 @@ export const settlePlan = async ({ plan, actual, event, reduceBalance }) => {
   });
 
   if (plan.pair_key) {
-    await movePair(plan.pair_key, plan.id, {
-      amount: actual,
-      status: "済",
-      certainty: "確定",
-    });
+    // 2026-11-01：もう片方にも確定する前の見込み額を planned_amount に残す（「見込みに戻す」で戻せるように）。
+    // 行ごとに見込み額が違うので、まとめての update ではなく 1 行ずつ書く
+    const pairs = await run(
+      supabase.from(PLAN_TABLE).select("id, amount, planned_amount")
+        .eq("pair_key", plan.pair_key).neq("id", plan.id)
+    );
+    for (const r of pairs) {
+      await savePlan({
+        id: r.id,
+        amount: actual,
+        planned_amount: r.planned_amount ?? r.amount,
+        status: "済",
+        certainty: "確定",
+      });
+    }
   }
 
   if (reduceBalance && event && event.balance_remaining != null) {
@@ -133,12 +143,36 @@ export const settlePlan = async ({ plan, actual, event, reduceBalance }) => {
   return saved;
 };
 
-/** 確定を取り消して見込みに戻す（入れ間違いの戻し方） */
-export const unsettlePlan = (plan) =>
-  savePlan({
+/**
+ * 確定を取り消して見込みに戻す（入れ間違いの戻し方）
+ *
+ * 2026-11-01：対で登録されたもう片方も、済のものは見込みに戻す（片方だけ戻ると、口座をまたぐお金が出たきり入らない形になるため）。
+ * 返済残高は戻さない。確定のときに減らしたかどうか（印を外したか）がどこにも残っていないため、足すと 2 重になりうる。
+ */
+export const unsettlePlan = async (plan) => {
+  const saved = await savePlan({
     id: plan.id,
     amount: plan.planned_amount ?? plan.amount,
     planned_amount: null,
     status: "未",
     certainty: "見込み",
   });
+
+  if (plan.pair_key) {
+    const pairs = await run(
+      supabase.from(PLAN_TABLE).select("id, amount, planned_amount")
+        .eq("pair_key", plan.pair_key).neq("id", plan.id).eq("status", "済")
+    );
+    for (const r of pairs) {
+      await savePlan({
+        id: r.id,
+        amount: r.planned_amount ?? r.amount,
+        planned_amount: null,
+        status: "未",
+        certainty: "見込み",
+      });
+    }
+  }
+
+  return saved;
+};

@@ -33,7 +33,8 @@ const emptyEvent = {
   closing_day: "", site_url: "", note: "", active: true,
 };
 
-const emptyBorrow = { borrowed_on: todayJst(), amount: "", note: "", addToBalance: true };
+// 2026-11-01：借りた日の初期値は、開いたときではなく入力欄を作るたびに今日を取る（開いたまま日をまたぐと前の日になるため）
+const emptyBorrow = () => ({ borrowed_on: todayJst(), amount: "", note: "", addToBalance: true });
 
 export default function Register({ data, reload }) {
   const { events, accounts, borrowings, plans } = data;
@@ -167,7 +168,7 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
           balance_remaining: Number(e.balance_remaining ?? 0) + Number(borrow.amount),
         });
       }
-      setBorrow(emptyBorrow); setBorrowOpen(false);
+      setBorrow(emptyBorrow()); setBorrowOpen(false);
       await reload(); setMsg({ text: "借りた分を入れました" });
     } catch (err) {
       setMsg({ text: err.message ?? String(err), ng: true });
