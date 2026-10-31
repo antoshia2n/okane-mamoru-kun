@@ -146,7 +146,7 @@ export const settlePlan = async ({ plan, actual, event, reduceBalance }) => {
 /**
  * 確定を取り消して見込みに戻す（入れ間違いの戻し方）
  *
- * 2026-11-01：対で登録されたもう片方も、済のものは見込みに戻す（片方だけ戻ると、口座をまたぐお金が出たきり入らない形になるため）。
+ * 2026-11-01：対で登録されたもう片方も、確定で済にしたものは見込みに戻す（片方だけ戻ると、口座をまたぐお金が出たきり入らない形になるため）。
  * 返済残高は戻さない。確定のときに減らしたかどうか（印を外したか）がどこにも残っていないため、足すと 2 重になりうる。
  */
 export const unsettlePlan = async (plan) => {
@@ -162,6 +162,8 @@ export const unsettlePlan = async (plan) => {
     const pairs = await run(
       supabase.from(PLAN_TABLE).select("id, amount, planned_amount")
         .eq("pair_key", plan.pair_key).neq("id", plan.id).eq("status", "済")
+        // 確定で済にした行（見込み額を残した行）だけを戻す。残高の入力で済になった行まで戻すと、その日の分が 2 重に数えられる
+        .not("planned_amount", "is", null)
     );
     for (const r of pairs) {
       await savePlan({
