@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { T, card, lb10, inp, mono, fmt, solidBtn, ghostBtn } from "shia2n-core";
-import { toSettle, todayJst, predictedAt, ym } from "../lib/calc.js";
+import { toSettle, todayJst, predictedAt, ym, addDays } from "../lib/calc.js";
 import { settlePlan, unsettlePlan, putBalance, saveAccount, markDone } from "../lib/api.js";
 
 /**
@@ -193,7 +193,8 @@ function BalanceBlock({ accounts, plans, reload, setMsg }) {
     try {
       const { predicted } = predictedAt(a, plans, date, reflected);
       const diff = predicted - Number(v);
-      await markDone(a.id, a.base_balance_date, reflected ? date : date);
+      // 2026-11-01：「もう落ちたあと」に印が無いときは、その日の分はまだ落ちていないので前の日までを済にする（予測の predictedAt と同じ区切り）
+      await markDone(a.id, a.base_balance_date, reflected ? date : addDays(date, -1));
       await putBalance({
         account_id: a.id, balance_date: date,
         actual_balance: Number(v), predicted_balance: predicted, diff,
