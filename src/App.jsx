@@ -10,6 +10,9 @@ import Register from "./screens/Register.jsx";
 import Trend from "./screens/Trend.jsx";
 import Guide from "./screens/Guide.jsx";
 import Setup from "./screens/Setup.jsx";
+// 2026-10-31 共通の外枠（右上の ？・アプリ一覧・アカウント）。ログインは shia2n-core の AuthGuard と lib/firebase.js なので、今までどおりの入口を使う
+import { mountAppShell, setTabTitle } from "shia2n-core/shell/app-shell.js";
+import { MANUAL } from "./lib/manual.js";
 
 export default function App() {
   const [tab, setTab]   = useState("今日");
@@ -57,18 +60,38 @@ export default function App() {
 
   useEffect(() => { reload(); }, [reload]);
 
+  // タブの名前は開いている画面の名前だけ（アプリはファビコンで示す・2026-10-26 の決め）
+  useEffect(() => { setTabTitle(tab, APP_NAME); }, [tab]);
+
+  // 共通の外枠（2026-10-31・思考整理くんと同じ部品）。置き場所は上の帯の右端（shellSlot）
+  const shellRef = useRef(null), shellSlot = useRef(null);
+  useEffect(() => {
+    let sh = null;
+    try {
+      sh = mountAppShell({ appId: "okane-mamoru-kun", appName: APP_NAME, manual: MANUAL, theme: false });
+      shellRef.current = sh;
+      if (shellSlot.current) sh.attach(shellSlot.current);
+    } catch { /* 外枠が出せなくてもアプリは動かす */ }
+    return () => { try { sh && sh.destroy(); } catch { /* 片づけに失敗しても止めない */ } shellRef.current = null; };
+  }, []);
+  useEffect(() => { if (shellRef.current && shellSlot.current) shellRef.current.attach(shellSlot.current); });
+
   const shell = (children) => (
     <div style={{ background: T.bg, minHeight: "100vh", fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", fontSize: 13, color: T.text }}>
       <div style={{ background: T.surface, borderBottom: `1px solid ${T.border}`, padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 10 }}>
         <div style={{ fontWeight: 700, fontSize: 14 }}>{APP_NAME}</div>
-        <nav style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-          {TABS.map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              style={{ background: tab === t ? T.text : "transparent", color: tab === t ? "#fff" : T.muted, border: "none", borderRadius: 6, padding: "5px 11px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-              {t}
-            </button>
-          ))}
-        </nav>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <nav style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+            {TABS.map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                style={{ background: tab === t ? T.text : "transparent", color: tab === t ? "#fff" : T.muted, border: "none", borderRadius: 6, padding: "5px 11px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                {t}
+              </button>
+            ))}
+          </nav>
+          {/* 右上の外枠（？・アプリ一覧・アカウント） */}
+          <span ref={shellSlot} style={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }} />
+        </div>
       </div>
       <div style={{ padding: "14px 16px", maxWidth: 860, margin: "0 auto" }}>{children}</div>
     </div>
