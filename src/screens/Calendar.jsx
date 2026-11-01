@@ -46,7 +46,7 @@ export default function Calendar({ data }) {
   const pickedRows = picked ? (byDate.get(picked) ?? []) : [];
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0,1fr)" }}>
       <div style={{ ...card, padding: "12px 14px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <button style={ghostBtn} onClick={() => move(-1)}>前の月</button>

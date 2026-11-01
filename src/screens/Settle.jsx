@@ -37,7 +37,7 @@ export default function Settle({ data, reload }) {
   const coming  = rows.filter((p) => p.plan_date >= today);
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0,1fr)" }}>
       <div style={{ ...card, padding: "14px 16px" }}>
         <div style={lb10}>確定</div>
         <div style={{ fontSize: 12, color: T.muted, marginTop: 6 }}>

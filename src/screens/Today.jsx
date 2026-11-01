@@ -43,7 +43,7 @@ export default function Today({ data }) {
   );
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0,1fr)" }}>
       {/* 一番上：警告 */}
       {soon.length > 0 && (
         <div style={{ ...card, borderColor: T.red, background: "#FBF0EF", padding: "14px 16px" }}>
@@ -115,6 +115,7 @@ export default function Today({ data }) {
         <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
           日付が決まっていないものと、日付を過ぎた未入金は入れていません。
         </div>
+        <div style={{ overflowX: "auto" }}>{/* 2026-11-01：口座が増えると列が増え、スマホ幅で画面からはみ出していた。表だけ横に動かす */}
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
             <tr style={{ color: T.muted, textAlign: "left" }}>
@@ -149,6 +150,7 @@ export default function Today({ data }) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* 同じものが 2 つの名前で入っていないか */}
@@ -204,6 +206,7 @@ export default function Today({ data }) {
       {soon.length > 0 && (
         <div style={{ ...card, padding: "14px 16px" }}>
           <div style={{ ...lb10, marginBottom: 10 }}>30 日以内に不足が出る日</div>
+          <div style={{ overflowX: "auto" }}>{/* 2026-11-01：口座が増えると列が増え、スマホ幅で画面からはみ出していた。表だけ横に動かす */}
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
               <tr style={{ color: T.muted, textAlign: "left" }}>
@@ -225,6 +228,7 @@ export default function Today({ data }) {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
