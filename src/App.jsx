@@ -84,7 +84,7 @@ export default function App() {
           <nav style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
             {TABS.map(t => (
               <button key={t} onClick={() => setTab(t)}
-                style={{ background: tab === t ? T.text : "transparent", color: tab === t ? "#fff" : T.muted, border: "none", borderRadius: 6, padding: "5px 11px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                style={{ background: tab === t ? T.text : "transparent", color: tab === t ? "#fff" : T.muted, border: "none", borderRadius: 6, padding: "5px 11px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                 {t}
               </button>
             ))}
@@ -103,7 +103,7 @@ export default function App() {
     <div style={{ ...card, padding: 20, borderColor: T.red }}>
       <div style={{ fontWeight: 700, color: T.red, marginBottom: 6 }}>読み込めませんでした</div>
       <div style={{ color: T.muted, fontSize: 12, whiteSpace: "pre-wrap" }}>{err}</div>
-      <button onClick={reload} style={{ marginTop: 12, background: T.text, color: "#fff", border: "none", borderRadius: 7, padding: "6px 14px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>もう一度</button>
+      <button onClick={reload} style={{ marginTop: 12, background: T.text, color: "#fff", border: "none", borderRadius: 7, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>もう一度</button>
     </div>
   );
 

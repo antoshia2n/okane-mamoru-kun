@@ -49,7 +49,7 @@ export default function Settle({ data, reload }) {
           <span>今月これから <b style={{ ...mono }}>{coming.length}</b> 件</span>
           <span>今月もう確定した <b style={{ ...mono, color: T.green }}>{done.length}</b> 件</span>
         </div>
-        {msg && <div style={{ fontSize: 11, color: msg.ng ? T.red : T.green, marginTop: 8 }}>{msg.text}</div>}
+        {msg && <div style={{ fontSize: 12, color: msg.ng ? T.red : T.green, marginTop: 8 }}>{msg.text}</div>}
       </div>
 
       {overdue.length > 0 && (
@@ -71,7 +71,7 @@ export default function Settle({ data, reload }) {
       {done.length > 0 && (
         <div style={{ ...card, padding: "14px 16px" }}>
           <div style={{ ...lb10, marginBottom: 4 }}>今月もう確定したもの</div>
-          <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+          <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
             入れ間違えたら「見込みに戻す」で元の見込み額へ戻ります。
           </div>
           {done.map((p) => (
@@ -79,7 +79,7 @@ export default function Settle({ data, reload }) {
               <span style={{ color: T.muted }}>
                 {p.plan_date}　{nameOf[p.account_id]}　{p.name}
                 {p.planned_amount != null && Number(p.planned_amount) !== Number(p.amount) && (
-                  <span style={{ marginLeft: 6, fontSize: 10, color: T.amber }}>
+                  <span style={{ marginLeft: 6, fontSize: 12, color: T.amber }}>
                     見込みは {fmt(Number(p.planned_amount))} だった
                   </span>
                 )}
@@ -107,7 +107,7 @@ function Block({ title, note, rows, nameOf, eventById, reload, setMsg, warn }) {
   return (
     <div style={{ ...card, padding: "14px 16px", borderColor: warn ? T.amber : T.border }}>
       <div style={{ ...lb10, color: warn ? T.amber : T.text, marginBottom: 4 }}>{title}</div>
-      <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>{note}</div>
+      <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>{note}</div>
       {rows.length === 0 ? (
         <div style={{ fontSize: 12, color: T.muted }}>1 件もありません。</div>
       ) : (
@@ -146,11 +146,11 @@ function Row({ p, nameOf, event, reload, setMsg }) {
         <span style={{ fontSize: 12 }}>
           <b style={{ ...mono, color: T.muted, marginRight: 8 }}>{p.plan_date}</b>
           {nameOf[p.account_id]}　<b>{p.name}</b>
-          <span style={{ marginLeft: 6, fontSize: 10, color: p.certainty === "見込み" ? T.amber : T.faint }}>{p.certainty}</span>
-          {p.pair_key && <span style={{ marginLeft: 6, fontSize: 10, color: T.blue }}>対</span>}
+          <span style={{ marginLeft: 6, fontSize: 12, color: p.certainty === "見込み" ? T.amber : T.faint }}>{p.certainty}</span>
+          {p.pair_key && <span style={{ marginLeft: 6, fontSize: 12, color: T.blue }}>対</span>}
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 11, color: T.muted }}>{p.direction === "out" ? "出" : "入"}</span>
+          <span style={{ fontSize: 12, color: T.muted }}>{p.direction === "out" ? "出" : "入"}</span>
           <input
             style={{ ...inp, width: 120, textAlign: "right" }}
             type="number"
@@ -163,13 +163,13 @@ function Row({ p, nameOf, event, reload, setMsg }) {
         </span>
       </div>
       {hasBalance && (
-        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: T.muted, marginTop: 4, paddingLeft: 2 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted, marginTop: 4, paddingLeft: 2 }}>
           <input type="checkbox" checked={reduce} onChange={(e) => setReduce(e.target.checked)} />
           返済残高（いま {fmt(Number(event.balance_remaining))}）をこの額だけ減らす
         </label>
       )}
       {p.pair_key && (
-        <div style={{ fontSize: 11, color: T.blue, marginTop: 4, paddingLeft: 2 }}>
+        <div style={{ fontSize: 12, color: T.blue, marginTop: 4, paddingLeft: 2 }}>
           対で登録されています。確定するともう片方も同じ額で確定します。
         </div>
       )}
@@ -218,7 +218,7 @@ function BalanceBlock({ accounts, plans, reload, setMsg }) {
   return (
     <div style={{ ...card, padding: "14px 16px" }}>
       <div style={{ ...lb10, marginBottom: 4 }}>いまの残高を入れる</div>
-      <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+      <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
         銀行の画面に出ている数字をそのまま入れます。予測とずれていれば、登録していない出入りがあるということです。
         <b style={{ color: T.text }}>先に上の確定を済ませてから入れてください。</b>順番が逆だと、同じ残高から先の不足額が 2 通りに割れます。
       </div>
@@ -235,7 +235,7 @@ function BalanceBlock({ accounts, plans, reload, setMsg }) {
         <div key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderTop: `1px solid ${T.border}`, gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontSize: 12 }}>
             <b>{a.name}</b>
-            <span style={{ marginLeft: 8, color: T.muted, fontSize: 11 }}>
+            <span style={{ marginLeft: 8, color: T.muted, fontSize: 12 }}>
               いま {fmt(Number(a.base_balance ?? 0))}（{a.base_balance_date}）
             </span>
           </span>

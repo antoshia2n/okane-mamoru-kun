@@ -85,7 +85,7 @@ export default function Today({ data }) {
               </div>
               <div style={{ ...lb10, marginBottom: 2 }}>いまの残高（{a.base_balance_date}）</div>
               <div style={{ fontSize: 18, ...mono }}>{fmt(Number(a.base_balance ?? 0))}</div>
-              <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
                 最低残高 {fmt(Number(a.min_balance ?? 0))}
               </div>
               <div style={{ borderTop: `1px solid ${T.border}`, marginTop: 10, paddingTop: 10 }}>
@@ -93,7 +93,7 @@ export default function Today({ data }) {
                   <>
                     <div style={{ ...lb10, color: T.red, marginBottom: 2 }}>次に足りなくなる</div>
                     <div style={{ fontSize: 15, ...mono, color: T.red }}>{fmt(first.不足額)}</div>
-                    <div style={{ fontSize: 11, color: T.muted }}>
+                    <div style={{ fontSize: 12, color: T.muted }}>
                       {first.日付}／{first.入れる期限} までに入れる
                     </div>
                   </>
@@ -112,7 +112,7 @@ export default function Today({ data }) {
       {/* 月別の収支予測 */}
       <div style={{ ...card, padding: "14px 16px" }}>
         <div style={{ ...lb10, marginBottom: 4 }}>月別の収支予測</div>
-        <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+        <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
           日付が決まっていないものと、日付を過ぎた未入金は入れていません。
         </div>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
@@ -157,7 +157,7 @@ export default function Today({ data }) {
           <div style={{ ...lb10, color: T.red, marginBottom: 4 }}>
             同じものが 2 つ入っているかもしれません（{doubles.length} 組）
           </div>
-          <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+          <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
             同じ月・同じ口座・同じ向きで、名前の先頭が同じ動きが 2 つあります。
             別物ならそのままで結構です。同じものなら、片方を「登録」から消してください。
             <b style={{ color: T.text }}>自動では消しません</b>（正しい行まで消えたときに気づけないため）。
@@ -234,7 +234,7 @@ export default function Today({ data }) {
           <div style={{ ...lb10, color: T.amber, marginBottom: 4 }}>
             不足の原因：入る日を過ぎたのに、まだ入っていないお金が {unpaid.length} 件・{fmt(unpaidSum)}
           </div>
-          <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+          <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
             上の計算には入れていません。入る前提で数えると、足りているように見えて落ちるためです。
             入ったら、その回を「済」にしてください。
           </div>
@@ -254,7 +254,7 @@ export default function Today({ data }) {
       {soon.length > 0 && (
         <div style={{ ...card, padding: "14px 16px" }}>
           <div style={{ ...lb10, marginBottom: 4 }}>動かせる予定</div>
-          <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+          <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
             不足が出たときに手を打てるのはこれだけです。印が「動かせない」のものは出していません。
           </div>
           {movable.length === 0 ? (
@@ -274,7 +274,7 @@ export default function Today({ data }) {
       {undated.length > 0 && (
         <div style={{ ...card, padding: "14px 16px" }}>
           <div style={{ ...lb10, marginBottom: 4 }}>日付が決まっていないもの</div>
-          <div style={{ fontSize: 11, color: T.muted, marginBottom: 8 }}>
+          <div style={{ fontSize: 12, color: T.muted, marginBottom: 8 }}>
             上の計算には入れていません。入る前提で計算すると、足りているように見えて落ちるためです。
           </div>
           {undated.map((p) => (
@@ -289,5 +289,5 @@ export default function Today({ data }) {
   );
 }
 
-const th = { padding: "4px 6px", fontSize: 10, fontWeight: 600, letterSpacing: "0.5px" };
+const th = { padding: "4px 6px", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px" };
 const td = { padding: "6px" };
