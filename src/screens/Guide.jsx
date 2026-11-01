@@ -90,7 +90,7 @@ export const GUIDE = [
 
 export default function Guide() {
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0,1fr)" }}>
       {GUIDE.map((s) => (
         <Box key={s.title} title={s.title}>
           {s.blocks.map((b, i) => <Block key={i} kind={b[0]} value={b[1]} />)}

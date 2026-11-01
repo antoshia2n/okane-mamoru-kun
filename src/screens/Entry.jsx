@@ -15,7 +15,7 @@ export default function Entry({ data, reload }) {
   const [sub, setSub] = useState("予定");
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0,1fr)" }}>
       <div style={{ display: "flex", gap: 4 }}>
         {["予定", "実残高", "口座"].map((s) => (
           <button key={s} onClick={() => setSub(s)}

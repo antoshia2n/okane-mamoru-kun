@@ -39,7 +39,7 @@ export default function Trend({ data }) {
   }, [points, balances, accounts]);
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0,1fr)" }}>
       <div style={{ ...card, padding: "14px 16px" }}>
         <div style={{ ...lb10, marginBottom: 4 }}>月末時点の予定残高</div>
         <div style={{ fontSize: 12, color: T.muted, marginBottom: 12 }}>

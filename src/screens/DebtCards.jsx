@@ -50,7 +50,7 @@ export default function DebtCards({ data, reload }) {
   const hasLimit = events.some((e) => e.credit_limit != null);
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0,1fr)" }}>
       <div style={{ ...card, padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
           <div style={lb10}>いまの合計</div>
