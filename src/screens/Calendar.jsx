@@ -70,40 +70,40 @@ export default function Calendar({ data }) {
             return (
               <button key={d} onClick={() => setPicked(d)}
                 style={{
-                  minHeight: 74, textAlign: "left", padding: "4px 5px", cursor: "pointer",
+                  minHeight: 74, minWidth: 0, overflow: "hidden", textAlign: "left", padding: "4px 3px", cursor: "pointer",
                   background: short ? "#FBF0EF" : picked === d ? T.s2 : T.surface,
                   border: `1px solid ${picked === d ? T.text : short ? T.red : isToday ? T.blue : T.border}`,
                   borderRadius: 6, fontFamily: "inherit", color: T.text,
                 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <span style={{ fontSize: 11, fontWeight: isToday ? 800 : 600, color: isToday ? T.blue : T.muted }}>
+                <div style={{ display: "flex", flexWrap: "wrap", columnGap: 4, justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span style={{ fontSize: 12, fontWeight: isToday ? 800 : 600, color: isToday ? T.blue : T.muted }}>
                     {Number(d.slice(8, 10))}
                   </span>
                   {count > 0 && (
-                    <span style={{ fontSize: 9, color: T.muted }}>{count} 件</span>
+                    <span style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{count}件</span>
                   )}
                 </div>
                 {count > 0 && (
-                  <div style={{ fontSize: 9, ...mono, color: total < 0 ? T.red : T.faint }}>
+                  <div style={{ fontSize: 12, ...mono, whiteSpace: "nowrap", letterSpacing: "-0.03em", color: total < 0 ? T.red : T.faint }}>
                     {Math.round(total / 1000).toLocaleString("ja-JP")}K
                   </div>
                 )}
                 {moves.some((m) => m.direction === "out") && (
-                  <div style={{ fontSize: 9, ...mono, color: T.red }}>
+                  <div style={{ fontSize: 12, ...mono, whiteSpace: "nowrap", letterSpacing: "-0.03em", color: T.red }}>
                     −{Math.round(moves.filter(m => m.direction === "out").reduce((s, m) => s + Number(m.amount), 0) / 1000)}K
                   </div>
                 )}
                 {moves.some((m) => m.direction === "in") && (
-                  <div style={{ fontSize: 9, ...mono, color: T.green }}>
-                    ＋{Math.round(moves.filter(m => m.direction === "in").reduce((s, m) => s + Number(m.amount), 0) / 1000)}K
+                  <div style={{ fontSize: 12, ...mono, whiteSpace: "nowrap", letterSpacing: "-0.03em", color: T.green }}>
+                    +{Math.round(moves.filter(m => m.direction === "in").reduce((s, m) => s + Number(m.amount), 0) / 1000)}K
                   </div>
                 )}
-                {short && <div style={{ fontSize: 9, fontWeight: 700, color: T.red }}>不足</div>}
+                {short && <div style={{ fontSize: 12, fontWeight: 700, color: T.red }}>不足</div>}
               </button>
             );
           })}
         </div>
-        <div style={{ fontSize: 10, color: T.faint, marginTop: 8 }}>
+        <div style={{ fontSize: 12, color: T.faint, marginTop: 8 }}>
           マスの数字は、上から「件数」「その日の予測残高（千円）」「出」「入り」です。日を押すと、その日の入力が開きます。
         </div>
       </div>
@@ -128,7 +128,7 @@ function DayPanel({ date, rows, onClose }) {
         <div style={lb10}>{date} の中身</div>
         <button style={ghostBtn} onClick={onClose}>閉じる</button>
       </div>
-      <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+      <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
         この画面は見るだけです。金額を直すのは「確定」、日付や繰り返しを直すのは「登録」です。
       </div>
 
@@ -148,9 +148,9 @@ function DayPanel({ date, rows, onClose }) {
             <div key={m.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "4px 0 4px 10px", color: T.muted }}>
               <span>
                 {m.name}
-                <span style={{ marginLeft: 6, fontSize: 10, color: m.certainty === "見込み" ? T.amber : T.faint }}>{m.certainty}</span>
-                {m.movable !== "動かせない" && <span style={{ marginLeft: 6, fontSize: 10, color: T.blue }}>{m.movable}</span>}
-                {m.pair_key && <span style={{ marginLeft: 6, fontSize: 10, color: T.blue }}>対</span>}
+                <span style={{ marginLeft: 6, fontSize: 12, color: m.certainty === "見込み" ? T.amber : T.faint }}>{m.certainty}</span>
+                {m.movable !== "動かせない" && <span style={{ marginLeft: 6, fontSize: 12, color: T.blue }}>{m.movable}</span>}
+                {m.pair_key && <span style={{ marginLeft: 6, fontSize: 12, color: T.blue }}>対</span>}
               </span>
               <span style={{ ...mono, color: m.direction === "out" ? T.red : T.green }}>
                 {m.direction === "out" ? "−" : "＋"}{fmt(Number(m.amount))}

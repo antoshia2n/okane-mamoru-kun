@@ -132,13 +132,13 @@ function PlanEditor({ accounts, plans, reload }) {
             <input style={inp} value={form.pair_key ?? ""} onChange={set("pair_key")} placeholder="口座をまたぐ出と入りに同じ文字を入れる" />
           </Field>
         </div>
-        <div style={{ fontSize: 11, color: T.muted, marginTop: 8 }}>
+        <div style={{ fontSize: 12, color: T.muted, marginTop: 8 }}>
           見込みは、足りなくなる側へ寄せた額を入れてください。出るお金は多めに、入るお金は少なめに。
         </div>
         <div style={{ display: "flex", gap: 6, marginTop: 12, alignItems: "center" }}>
           <button disabled={busy} onClick={submit} style={solidBtn(T.text)}>{form.id ? "直す" : "足す"}</button>
           {form.id && <button onClick={() => setForm(emptyPlan)} style={ghostBtn}>やめる</button>}
-          {msg && <span style={{ fontSize: 11, color: T.muted }}>{msg}</span>}
+          {msg && <span style={{ fontSize: 12, color: T.muted }}>{msg}</span>}
         </div>
       </div>
 
@@ -155,7 +155,7 @@ function PlanEditor({ accounts, plans, reload }) {
               <span style={{ flex: 1 }}>
                 <span style={{ color: T.muted, marginRight: 8 }}>{p.plan_date ?? "日付未定"}</span>
                 {nameOf[p.account_id]}　{p.name}
-                {p.pair_key && <span style={{ marginLeft: 6, fontSize: 10, color: T.blue }}>対</span>}
+                {p.pair_key && <span style={{ marginLeft: 6, fontSize: 12, color: T.blue }}>対</span>}
               </span>
               <span style={{ ...mono, color: p.direction === "out" ? T.red : T.green, marginRight: 10 }}>
                 {p.direction === "out" ? "−" : "＋"}{fmt(Number(p.amount))}
@@ -222,7 +222,7 @@ function BalanceEditor({ accounts, plans, reload }) {
   return (
     <div style={{ ...card, padding: "14px 16px" }}>
       <div style={{ ...lb10, marginBottom: 4 }}>実際の残高を入れる</div>
-      <div style={{ fontSize: 11, color: T.muted, marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: T.muted, marginBottom: 12 }}>
         入れた残高が、そこから先の計算の起点になります。過ぎた予定は自動で「済」になります。
       </div>
       <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
@@ -246,7 +246,7 @@ function BalanceEditor({ accounts, plans, reload }) {
               ・{p.name}　{p.direction === "out" ? "−" : "＋"}{fmt(Number(p.amount))}
             </div>
           ))}
-          <div style={{ fontSize: 11, color: T.muted, margin: "8px 0 6px" }}>
+          <div style={{ fontSize: 12, color: T.muted, margin: "8px 0 6px" }}>
             これが落ちた後の残高ですか。ここを取り違えると、先の不足額が変わります。
           </div>
           <div style={{ display: "flex", gap: 6 }}>
@@ -289,14 +289,14 @@ function AccountEditor({ accounts, reload }) {
   return (
     <div style={{ ...card, padding: "14px 16px" }}>
       <div style={{ ...lb10, marginBottom: 4 }}>口座の最低残高</div>
-      <div style={{ fontSize: 11, color: T.muted, marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: T.muted, marginBottom: 12 }}>
         ここを 0 にすると、残高 0 円を正常と判定します。割ってはいけない額を入れてください。
       </div>
       {accounts.map((a) => (
         <div key={a.id} style={{ display: "flex", gap: 8, alignItems: "flex-end", padding: "8px 0", borderTop: `1px solid ${T.border}` }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 12, fontWeight: 700 }}>{a.name}</div>
-            <div style={{ fontSize: 11, color: T.muted }}>
+            <div style={{ fontSize: 12, color: T.muted }}>
               {a.kind}／いまの残高 {fmt(Number(a.base_balance ?? 0))}（{a.base_balance_date}）
             </div>
           </div>
@@ -306,7 +306,7 @@ function AccountEditor({ accounts, reload }) {
           <button style={solidBtn(T.text)} onClick={() => save(a)}>直す</button>
         </div>
       ))}
-      {msg && <div style={{ fontSize: 11, color: T.muted, marginTop: 10 }}>{msg}</div>}
+      {msg && <div style={{ fontSize: 12, color: T.muted, marginTop: 10 }}>{msg}</div>}
     </div>
   );
 }

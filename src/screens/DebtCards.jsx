@@ -60,7 +60,7 @@ export default function DebtCards({ data, reload }) {
           </div>
         </div>
         {!hasLimit && (
-          <div style={{ fontSize: 11, color: T.amber, marginTop: 6 }}>
+          <div style={{ fontSize: 12, color: T.amber, marginTop: 6 }}>
             カードの枠がまだ 1 件も入っていません。枠を入れると「利用できる枠」が出ます。
           </div>
         )}
@@ -193,7 +193,7 @@ function EventCard({ e, borrowings, reload }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700 }}>{e.name}</div>
-          <div style={{ fontSize: 10, color: T.faint, marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: T.faint, marginTop: 2 }}>
             {e.direction === "out" ? "出ていく" : "入ってくる"}／{recurrenceText(e)}
             {e.amount != null && <>／毎回 {fmt(Number(e.amount))}</>}
             {e.amount_rule === "毎月変わる" && <span style={{ color: T.amber }}>／金額は毎月変わる</span>}
@@ -216,7 +216,7 @@ function EventCard({ e, borrowings, reload }) {
         {e.credit_limit != null && (
           <>
             <span>利用できる枠 <b style={{ ...mono, color: hot ? T.red : T.text }}>{fmt(left ?? 0)}</b></span>
-            <span style={{ fontSize: 11 }}>（枠の総額 {fmt(Number(e.credit_limit))}／いま {fmt(Number(e.credit_used ?? 0))}）</span>
+            <span style={{ fontSize: 12 }}>（枠の総額 {fmt(Number(e.credit_limit))}／いま {fmt(Number(e.credit_used ?? 0))}）</span>
           </>
         )}
         {e.closing_day != null && <span>締め {e.closing_day} 日</span>}
@@ -227,11 +227,11 @@ function EventCard({ e, borrowings, reload }) {
           <div style={{ marginTop: 6, background: T.s2, borderRadius: 4, height: 6, overflow: "hidden" }}>
             <div style={{ width: `${rate}%`, height: "100%", background: hot ? T.red : T.green }} />
           </div>
-          <div style={{ fontSize: 11, color: hot ? T.red : T.muted, marginTop: 2 }}>枠の {rate}% を使っています</div>
+          <div style={{ fontSize: 12, color: hot ? T.red : T.muted, marginTop: 2 }}>枠の {rate}% を使っています</div>
         </>
       )}
 
-      {e.note && <div style={{ fontSize: 11, color: T.faint, marginTop: 6 }}>{e.note}</div>}
+      {e.note && <div style={{ fontSize: 12, color: T.faint, marginTop: 6 }}>{e.note}</div>}
 
       {/* 直す */}
       {editing && (
@@ -246,7 +246,7 @@ function EventCard({ e, borrowings, reload }) {
             <F label="管理サイトの住所"><input style={inp} value={form.site_url} onChange={set("site_url")} placeholder="https://" /></F>
             <F label="備考"><input style={inp} value={form.note} onChange={set("note")} /></F>
           </div>
-          <div style={{ fontSize: 11, color: T.muted, marginTop: 8 }}>
+          <div style={{ fontSize: 12, color: T.muted, marginTop: 8 }}>
             利用できる枠は入れません。枠の総額といま使っている額から出します。
           </div>
           <div style={{ display: "flex", gap: 6, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
@@ -254,7 +254,7 @@ function EventCard({ e, borrowings, reload }) {
               {saving ? "入れています" : "この内容にする"}
             </button>
             <button style={ghostBtn} onClick={close} disabled={saving}>やめる</button>
-            {msg && <span style={{ fontSize: 11, color: msg.ng ? T.red : T.muted }}>{msg.text}</span>}
+            {msg && <span style={{ fontSize: 12, color: msg.ng ? T.red : T.muted }}>{msg.text}</span>}
           </div>
         </div>
       )}
@@ -269,7 +269,7 @@ function EventCard({ e, borrowings, reload }) {
         </div>
 
         {borrowings.length === 0 && !borrowOpen && (
-          <div style={{ fontSize: 11, color: T.faint, marginTop: 6 }}>まだ 1 件もありません。</div>
+          <div style={{ fontSize: 12, color: T.faint, marginTop: 6 }}>まだ 1 件もありません。</div>
         )}
 
         {borrowings.map((b) => (
@@ -297,14 +297,14 @@ function EventCard({ e, borrowings, reload }) {
               />
               返済残高にもこの額を足す
             </label>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>
               外すと、記録だけ残って返済残高は変わりません。すでに残高を手で直したときは外してください。
             </div>
             <div style={{ display: "flex", gap: 6, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
               <button style={solidBtn(T.text)} onClick={addBorrow} disabled={saving}>
                 {saving ? "入れています" : "足す"}
               </button>
-              {msg && <span style={{ fontSize: 11, color: msg.ng ? T.red : T.muted }}>{msg.text}</span>}
+              {msg && <span style={{ fontSize: 12, color: msg.ng ? T.red : T.muted }}>{msg.text}</span>}
             </div>
           </div>
         )}

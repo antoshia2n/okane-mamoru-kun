@@ -42,7 +42,7 @@ export default function Trend({ data }) {
     <div style={{ display: "grid", gap: 12 }}>
       <div style={{ ...card, padding: "14px 16px" }}>
         <div style={{ ...lb10, marginBottom: 4 }}>月末時点の予定残高</div>
-        <div style={{ fontSize: 11, color: T.muted, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: T.muted, marginBottom: 12 }}>
           その月の終わりに、口座がいくらになっている見込みかを並べています。
           入る日が決まっていない入金は入れていないので、先の月ほど低く出ます。
         </div>
@@ -66,7 +66,7 @@ export default function Trend({ data }) {
                     </td>
                   ))}
                   <td style={{ ...td, textAlign: "right", ...mono, color: r.total < 0 ? T.red : T.text }}>{fmt(r.total)}</td>
-                  <td style={{ ...td, color: T.red, fontSize: 11 }}>
+                  <td style={{ ...td, color: T.red, fontSize: 12 }}>
                     {r.perAccount.flatMap((x) => x.shortDays.map((d) => d.日付.slice(8, 10))).join("・") || ""}
                   </td>
                 </tr>
@@ -78,7 +78,7 @@ export default function Trend({ data }) {
 
       <div style={{ ...card, padding: "14px 16px" }}>
         <div style={{ ...lb10, marginBottom: 4 }}>予測と実際のずれ</div>
-        <div style={{ fontSize: 11, color: T.muted, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: T.muted, marginBottom: 12 }}>
           実残高を入れた回だけ出ます。ずれるということは、登録していない出入りがあるということです。
           ずれの割合が 10% を超えたら赤で出します。
         </div>
@@ -124,5 +124,5 @@ export default function Trend({ data }) {
   );
 }
 
-const th = { padding: "4px 6px", fontSize: 10, fontWeight: 600, letterSpacing: "0.5px" };
+const th = { padding: "4px 6px", fontSize: 12, fontWeight: 600, letterSpacing: "0.5px" };
 const td = { padding: "6px" };

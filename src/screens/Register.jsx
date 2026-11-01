@@ -56,7 +56,7 @@ export default function Register({ data, reload }) {
           続いているもの（契約・借入・カード・入金元）を 1 件ずつ入れる場所です。
           ここで入れた 1 件から、毎月の動きが自動で生まれます。<b style={{ color: T.text }}>毎月入れ直す必要はありません。</b>
         </div>
-        {msg && <div style={{ fontSize: 11, color: msg.ng ? T.red : T.green, marginTop: 8 }}>{msg.text}</div>}
+        {msg && <div style={{ fontSize: 12, color: msg.ng ? T.red : T.green, marginTop: 8 }}>{msg.text}</div>}
       </div>
 
       <Group
@@ -181,7 +181,7 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
         <div>
           <div style={{ fontSize: 13, fontWeight: 700 }}>
             {e.name}
-            {!e.active && <span style={{ marginLeft: 6, fontSize: 10, color: T.muted }}>使っていない</span>}
+            {!e.active && <span style={{ marginLeft: 6, fontSize: 12, color: T.muted }}>使っていない</span>}
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
             <span style={{ fontSize: 22, fontWeight: 700, ...mono, color: dir === "in" ? T.green : T.red }}>
@@ -189,12 +189,12 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
                 ? `${fmt(range.low)} 〜 ${fmt(range.high)}`
                 : e.amount != null ? fmt(Number(e.amount)) : "額が未入力"}
             </span>
-            <span style={{ fontSize: 11, color: T.muted }}>
+            <span style={{ fontSize: 12, color: T.muted }}>
               {recurrenceText(e)}
               {e.ends_on && <>・{String(e.ends_on).slice(0, 7)} まで</>}
             </span>
           </div>
-          <div style={{ fontSize: 11, color: T.faint, marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: T.faint, marginTop: 2 }}>
             {accountName}
             {e.amount_rule === "毎月変わる" && <span style={{ color: T.amber }}>・毎月変わる</span>}
             {range && <span style={{ color: T.amber }}>・幅の出どころは{range.出どころ}</span>}
@@ -221,7 +221,7 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
         )}
         {e.credit_limit != null && (
           <span>使える枠 <b style={{ ...mono, color: hot ? T.red : T.text }}>{fmt(left ?? 0)}</b>
-            <span style={{ fontSize: 11 }}>（枠 {fmt(Number(e.credit_limit))}／いま {fmt(Number(e.credit_used ?? 0))}）</span>
+            <span style={{ fontSize: 12 }}>（枠 {fmt(Number(e.credit_limit))}／いま {fmt(Number(e.credit_used ?? 0))}）</span>
           </span>
         )}
         {e.closing_day != null && <span>締め {e.closing_day} 日</span>}
@@ -233,7 +233,7 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
         </div>
       )}
 
-      {e.note && <div style={{ fontSize: 11, color: T.faint, marginTop: 4 }}>{e.note}</div>}
+      {e.note && <div style={{ fontSize: 12, color: T.faint, marginTop: 4 }}>{e.note}</div>}
 
       {ask && (
         <DeleteAsk
@@ -435,7 +435,7 @@ function Form({ initial, accounts, dir, id, onDone, onError, onCancel }) {
       </div>
 
       {f.amount_rule === "毎月変わる" && (
-        <div style={{ fontSize: 11, color: T.amber, marginTop: 8 }}>
+        <div style={{ fontSize: 12, color: T.amber, marginTop: 8 }}>
           少なめの額を不足額の計算に使い、多めの額は幅の上側として画面に出します。
           実績が 3 回たまったら、手で入れた幅より実績の最小と最大を使います。
           {dir === "in" ? "入りは少なめに寄せます（多めに見て外れると落ちるため）。" : "出は多めに寄せます。"}
@@ -457,7 +457,7 @@ function Form({ initial, accounts, dir, id, onDone, onError, onCancel }) {
                 <F label="締め日"><input style={inp} type="number" min="1" max="31" value={f.closing_day} onChange={set("closing_day")} /></F>
                 <F label="管理サイトの住所"><input style={inp} value={f.site_url} onChange={set("site_url")} placeholder="https://" /></F>
               </div>
-              <div style={{ fontSize: 11, color: T.muted, marginTop: 6 }}>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 6 }}>
                 使える枠は入れません。枠の総額といま使っている額から出します。
                 返済残高を入れておくと、確定の画面で返済を確定させたときに、その額だけ減らせます。
               </div>
@@ -503,18 +503,18 @@ function AccountBlock({ accounts, reload, setMsg }) {
 
   return (
     <div style={{ marginTop: 10 }}>
-      <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+      <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
         最低残高は「ここを割ったら足りないとみなす額」です。0 にすると、残高 0 円を正常と判定します。
       </div>
       {accounts.map((a) => (
         <div key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderTop: `1px solid ${T.border}`, gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontSize: 12 }}>
             <b>{a.name}</b>
-            <span style={{ marginLeft: 8, color: T.muted, fontSize: 11 }}>
+            <span style={{ marginLeft: 8, color: T.muted, fontSize: 12 }}>
               {a.kind}／いま {fmt(Number(a.base_balance ?? 0))}（{a.base_balance_date}）
             </span>
           </span>
-          <label style={{ fontSize: 11, color: T.muted }}>
+          <label style={{ fontSize: 12, color: T.muted }}>
             最低残高　
             <input style={{ ...inp, width: 140, textAlign: "right" }} type="number"
               value={draft[a.id] ?? ""} onChange={(e) => setDraft({ ...draft, [a.id]: e.target.value })} />
@@ -544,7 +544,7 @@ function DeleteAsk({ e, mine, onCancel, onDone, busy }) {
         <input type="checkbox" checked={alsoPlans} onChange={(ev) => setAlsoPlans(ev.target.checked)} />
         まだの動き {notYet} 件も一緒に消す
       </label>
-      <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>
+      <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>
         外すと、動きだけが登録から切り離されて残ります。確定済みの {done} 件は消しません
         （過去に起きたことなので、消すと実残高との差が合わなくなります）。
       </div>
