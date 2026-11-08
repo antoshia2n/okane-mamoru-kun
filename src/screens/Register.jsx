@@ -100,7 +100,7 @@ function Group({ title, color, dir, list, accounts, borrowings, plans, adding, s
           disabled={busyElsewhere}
           onClick={() => (adding === dir ? close() : (setEditId(null), setAdding(dir)))}
         >
-          {adding === dir ? "やめる" : "1 件足す"}
+          {adding === dir ? "やめる" : "1 件追加"}
         </button>
       </div>
 
@@ -273,7 +273,7 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ ...lb10 }}>追加で借りた記録（{borrowings.length}）</div>
             <button style={ghostBtn} disabled={disabled} onClick={() => setBorrowOpen(!borrowOpen)}>
-              {borrowOpen ? "やめる" : "1 件足す"}
+              {borrowOpen ? "やめる" : "1 件追加"}
             </button>
           </div>
           {borrowings.map((b) => (
@@ -283,7 +283,7 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
                 <span style={{ ...mono, color: T.red }}>＋{fmt(Number(b.amount))}</span>
                 <button style={{ ...ghostBtn, color: T.red }} onClick={async () => {
                   try { await borrowingApi.remove(b.id); await reload(); } catch (err) { setMsg({ text: err.message ?? String(err), ng: true }); }
-                }}>消す</button>
+                }}>削除</button>
               </span>
             </div>
           ))}
@@ -299,7 +299,7 @@ function Card({ e, accounts, dir, plans, borrowings, editing, disabled, onOpen, 
                 返済残高にもこの額を足す
               </label>
               <div style={{ marginTop: 10 }}>
-                <button style={solidBtn(T.text)} onClick={addBorrow} disabled={busy}>足す</button>
+                <button style={solidBtn(T.text)} onClick={addBorrow} disabled={busy}>追加</button>
               </div>
             </div>
           )}
@@ -371,7 +371,7 @@ function Form({ initial, accounts, dir, id, onDone, onError, onCancel }) {
   return (
     <div style={{ marginTop: 10, padding: 12, background: T.s2, borderRadius: 6, border: `1px solid ${T.border}` }}>
       <div style={{ ...lb10, marginBottom: 8 }}>
-        {id ? "編集" : dir === "in" ? "入ってくるものを 1 件足す" : "出ていくものを 1 件足す"}
+        {id ? "編集" : dir === "in" ? "入ってくるものを 1 件追加" : "出ていくものを 1 件追加"}
       </div>
 
       <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
@@ -542,15 +542,15 @@ function DeleteAsk({ e, mine, onCancel, onDone, busy }) {
       </div>
       <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
         <input type="checkbox" checked={alsoPlans} onChange={(ev) => setAlsoPlans(ev.target.checked)} />
-        まだの動き {notYet} 件も一緒に消す
+        まだの動き {notYet} 件も一緒に削除
       </label>
       <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>
-        外すと、動きだけが登録から切り離されて残ります。確定済みの {done} 件は消しません
-        （過去に起きたことなので、消すと実残高との差が合わなくなります）。
+        外すと、動きだけが登録から切り離されて残ります。確定済みの {done} 件は削除しません
+        （過去に起きたことなので、削除すると実残高との差が合わなくなります）。
       </div>
       <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
         <button style={solidBtn(T.red)} onClick={() => onDone(alsoPlans)} disabled={busy}>
-          {busy ? "消しています" : "削除する"}
+          {busy ? "削除しています" : "削除する"}
         </button>
         <button style={ghostBtn} onClick={onCancel} disabled={busy}>やめる</button>
       </div>

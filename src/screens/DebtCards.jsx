@@ -204,7 +204,7 @@ function EventCard({ e, borrowings, reload }) {
             <a href={e.site_url} target="_blank" rel="noreferrer" style={{ ...ghostBtn, textDecoration: "none", display: "inline-flex" }}>管理サイト</a>
           )}
           <button style={editing ? solidBtn(T.text) : ghostBtn} onClick={() => (editing ? close() : open())}>
-            {editing ? "直しています" : "直す"}
+            {editing ? "編集しています" : "編集"}
           </button>
         </div>
       </div>
@@ -236,7 +236,7 @@ function EventCard({ e, borrowings, reload }) {
       {/* 直す */}
       {editing && (
         <div style={{ marginTop: 10, padding: "12px", background: T.s2, borderRadius: 6, border: `1px solid ${T.border}` }}>
-          <div style={{ ...lb10, marginBottom: 8 }}>{e.name} を直す</div>
+          <div style={{ ...lb10, marginBottom: 8 }}>{e.name} を編集</div>
           <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
             <F label="呼び名"><input style={inp} value={form.name} onChange={set("name")} /></F>
             <F label="返済残高（あといくら返すか）"><input style={inp} type="number" value={form.balance_remaining} onChange={set("balance_remaining")} /></F>
@@ -264,7 +264,7 @@ function EventCard({ e, borrowings, reload }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={lb10}>追加で借りた記録</div>
           <button style={ghostBtn} disabled={editing} onClick={() => { setBorrowOpen(!borrowOpen); setMsg(null); }}>
-            {borrowOpen ? "やめる" : "1 件足す"}
+            {borrowOpen ? "やめる" : "1 件追加"}
           </button>
         </div>
 
@@ -277,7 +277,7 @@ function EventCard({ e, borrowings, reload }) {
             <span>{b.borrowed_on}　{b.note ?? ""}</span>
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ ...mono, color: T.red }}>＋{fmt(Number(b.amount))}</span>
-              <button style={{ ...ghostBtn, color: T.red }} onClick={() => removeBorrow(b)}>消す</button>
+              <button style={{ ...ghostBtn, color: T.red }} onClick={() => removeBorrow(b)}>削除</button>
             </span>
           </div>
         ))}
@@ -298,11 +298,11 @@ function EventCard({ e, borrowings, reload }) {
               返済残高にもこの額を足す
             </label>
             <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>
-              外すと、記録だけ残って返済残高は変わりません。すでに残高を手で直したときは外してください。
+              外すと、記録だけ残って返済残高は変わりません。すでに残高を手で編集したときは外してください。
             </div>
             <div style={{ display: "flex", gap: 6, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
               <button style={solidBtn(T.text)} onClick={addBorrow} disabled={saving}>
-                {saving ? "入れています" : "足す"}
+                {saving ? "入れています" : "追加"}
               </button>
               {msg && <span style={{ fontSize: 12, color: msg.ng ? T.red : T.muted }}>{msg.text}</span>}
             </div>

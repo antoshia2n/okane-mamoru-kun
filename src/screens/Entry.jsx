@@ -87,7 +87,7 @@ function PlanEditor({ accounts, plans, reload }) {
 
   const remove = async (id) => {
     setBusy(true);
-    try { await deletePlan(id); await reload(); setMsg("消しました"); }
+    try { await deletePlan(id); await reload(); setMsg("削除しました"); }
     catch (e) { setMsg(e.message ?? String(e)); }
     finally { setBusy(false); }
   };
@@ -95,7 +95,7 @@ function PlanEditor({ accounts, plans, reload }) {
   return (
     <>
       <div style={{ ...card, padding: "14px 16px" }}>
-        <div style={{ ...lb10, marginBottom: 10 }}>{form.id ? "予定を直す" : "予定を足す"}</div>
+        <div style={{ ...lb10, marginBottom: 10 }}>{form.id ? "予定を編集" : "予定を追加"}</div>
         <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))" }}>
           <Field label="口座">
             <select style={inp} value={form.account_id} onChange={set("account_id")}>
@@ -136,7 +136,7 @@ function PlanEditor({ accounts, plans, reload }) {
           見込みは、足りなくなる側へ寄せた額を入れてください。出るお金は多めに、入るお金は少なめに。
         </div>
         <div style={{ display: "flex", gap: 6, marginTop: 12, alignItems: "center" }}>
-          <button disabled={busy} onClick={submit} style={solidBtn(T.text)}>{form.id ? "直す" : "足す"}</button>
+          <button disabled={busy} onClick={submit} style={solidBtn(T.text)}>{form.id ? "編集" : "追加"}</button>
           {form.id && <button onClick={() => setForm(emptyPlan)} style={ghostBtn}>やめる</button>}
           {msg && <span style={{ fontSize: 12, color: T.muted }}>{msg}</span>}
         </div>
@@ -160,8 +160,8 @@ function PlanEditor({ accounts, plans, reload }) {
               <span style={{ ...mono, color: p.direction === "out" ? T.red : T.green, marginRight: 10 }}>
                 {p.direction === "out" ? "−" : "＋"}{fmt(Number(p.amount))}
               </span>
-              <button style={ghostBtn} onClick={() => setForm({ ...p, amount: String(p.amount), account_id: String(p.account_id) })}>直す</button>
-              <button style={{ ...ghostBtn, marginLeft: 4, color: T.red }} onClick={() => remove(p.id)}>消す</button>
+              <button style={ghostBtn} onClick={() => setForm({ ...p, amount: String(p.amount), account_id: String(p.account_id) })}>編集</button>
+              <button style={{ ...ghostBtn, marginLeft: 4, color: T.red }} onClick={() => remove(p.id)}>削除</button>
             </div>
           ))}
         </div>
@@ -281,7 +281,7 @@ function AccountEditor({ accounts, reload }) {
   const save = async (a) => {
     try {
       await saveAccount({ id: a.id, min_balance: Number(draft[a.id].min_balance) });
-      setMsg(`${a.name} を直しました`);
+      setMsg(`${a.name} を変更しました`);
       await reload();
     } catch (e) { setMsg(e.message ?? String(e)); }
   };
@@ -303,7 +303,7 @@ function AccountEditor({ accounts, reload }) {
           <div style={{ width: 140 }}>
             <input style={inp} type="number" value={draft[a.id]?.min_balance ?? ""} onChange={(e) => setDraft({ ...draft, [a.id]: { min_balance: e.target.value } })} />
           </div>
-          <button style={solidBtn(T.text)} onClick={() => save(a)}>直す</button>
+          <button style={solidBtn(T.text)} onClick={() => save(a)}>編集</button>
         </div>
       ))}
       {msg && <div style={{ fontSize: 12, color: T.muted, marginTop: 10 }}>{msg}</div>}

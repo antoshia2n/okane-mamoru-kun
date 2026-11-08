@@ -129,7 +129,7 @@ function DayPanel({ date, rows, onClose }) {
         <button style={ghostBtn} onClick={onClose}>閉じる</button>
       </div>
       <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
-        この画面は見るだけです。金額を直すのは「確定」、日付や繰り返しを直すのは「登録」です。
+        この画面は見るだけです。金額を編集するのは「確定」、日付や繰り返しを編集するのは「登録」です。
       </div>
 
       {rows.length === 0 && (
