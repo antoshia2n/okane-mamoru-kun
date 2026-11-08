@@ -13,6 +13,7 @@ import Setup from "./screens/Setup.jsx";
 // 2026-10-31 共通の外枠（右上の ？・アプリ一覧・アカウント）。ログインは shia2n-core の AuthGuard と lib/firebase.js なので、今までどおりの入口を使う
 import { mountAppShell, setTabTitle } from "shia2n-core/shell/app-shell.js";
 import { MANUAL } from "./lib/manual.js";
+import { TabHelp } from "./lib/guide.jsx";
 
 export default function App() {
   const [tab, setTab]   = useState("今日");
@@ -68,7 +69,7 @@ export default function App() {
   useEffect(() => {
     let sh = null;
     try {
-      sh = mountAppShell({ appId: "okane-mamoru-kun", appName: APP_NAME, manual: MANUAL, theme: false });
+      sh = mountAppShell({ appId: "okane-mamoru-kun", appName: APP_NAME, manual: MANUAL, theme: false, guide: true });
       shellRef.current = sh;
       if (shellSlot.current) sh.attach(shellSlot.current);
     } catch { /* 外枠が出せなくてもアプリは動かす */ }
@@ -89,6 +90,7 @@ export default function App() {
               </button>
             ))}
           </nav>
+          <TabHelp tab={tab} />
           {/* 右上の外枠（？・アプリ一覧・アカウント） */}
           <span ref={shellSlot} style={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }} />
         </div>

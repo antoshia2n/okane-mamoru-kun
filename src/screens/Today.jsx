@@ -161,8 +161,8 @@ export default function Today({ data }) {
           </div>
           <div style={{ fontSize: 12, color: T.muted, marginBottom: 10 }}>
             同じ月・同じ口座・同じ向きで、名前の先頭が同じ動きが 2 つあります。
-            別物ならそのままで結構です。同じものなら、片方を「登録」から消してください。
-            <b style={{ color: T.text }}>自動では消しません</b>（正しい行まで消えたときに気づけないため）。
+            別物ならそのままで結構です。同じものなら、片方を「登録」から削除してください。
+            <b style={{ color: T.text }}>自動では削除しません</b>（正しい行まで削除されたときに気づけないため）。
           </div>
           {doubles.map(([a, b], i) => (
             <div key={i} style={{ fontSize: 12, padding: "5px 0", borderTop: `1px solid ${T.border}` }}>
