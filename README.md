@@ -34,3 +34,5 @@ mo_accounts（口座）／mo_plans（予定）／mo_balances（実残高）／mo
 | OKANE_ALLOW_UID | Secret | この画面を使える人の識別子。空だと誰も通さない |
 
 OKANE_ALLOW_UID が空のときは、画面が自分の識別子を出して入れ方を案内する。
+
+- 2026-11-09：共通の部品 shia2n-core 1.17.1 を取り込む（右上のアプリ一覧を別タブで開く） のための出し直し
